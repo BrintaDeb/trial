@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us - Atelier Studios</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Learn about Atelier Studios, our mission, core values, and the talented team behind our immersive digital experiences and bold brand identities.">
+    <meta name="keywords" content="Atelier Studios, About Us, Digital Agency, Web Development, UI/UX Design, Branding">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=DM+Sans:wght@400;500;700&family=Titan+One&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles/main.css">
+    
+    <style>
+        .about-hero {
+            padding: 12rem 5% 4rem;
+            text-align: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        .about-hero h1 {
+            font-size: clamp(4rem, 8vw, 8rem);
+            line-height: 1;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .about-hero p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.8;
+        }
+
+        .section-container {
+            padding: 6rem 5%;
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Core Values Grid */
+        .values-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 4rem;
+        }
+
+        .value-card {
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            transition: transform 0.3s ease;
+        }
+
+        .value-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--accent-primary);
+        }
+
+        .value-card h3 {
+            color: var(--accent-primary);
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Team Section */
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 3rem;
+            margin-top: 4rem;
+        }
+
+        .team-member {
+            text-align: center;
+        }
+
+        .team-photo {
+            width: 100%;
+            aspect-ratio: 3/4;
+            object-fit: cover;
+            border-radius: 20px;
+            margin-bottom: 1.5rem;
+            border: 2px solid rgba(255,255,255,0.1);
+            background: #2a2f26; /* Placeholder color */
+        }
+
+        .team-name {
+            font-size: 1.5rem;
+            color: var(--text-primary);
+            margin-bottom: 0.2rem;
+            font-family: var(--font-header);
+        }
+
+        .team-role {
+            color: var(--accent-secondary);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* Why Us Section */
+        .why-us-container {
+            background: rgba(107, 118, 106, 0.2);
+            border-radius: 30px;
+            padding: 5rem;
+            border: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+        }
+        
+        @media(max-width: 768px) {
+            .why-us-container { padding: 3rem 2rem; }
+        }
+    </style>
+</head>
+<body>
+    <div id="tsparticles"></div>
+    <div class="noise-overlay"></div>
+
+    <!-- Navigation -->
+    <nav class="navbar glass-panel" style="z-index: 100;">
+        <a href="/" class="logo cursor-link" style="text-decoration:none;">Atelier Studios<span>.</span></a>
+        <div class="menu-toggle" id="mobile-menu"><span></span><span></span><span></span></div>
+        <ul class="nav-links">
+            <li><a href="/about.html" class="cursor-link" style="color: var(--accent-primary);">About Us</a></li>
+            <li><a href="/#services" class="cursor-link">Services</a></li>
+            <li><a href="/#work" class="cursor-link">Work</a></li>
+            <li><a href="/quote.html" class="cursor-link">Get a Quote</a></li>
+        </ul>
+    </nav>
+
+    <!-- Custom Cursor -->
+    <div id="custom-cursor"></div>
+
+    <!-- Hero / Mission -->
+    <section class="about-hero">
+        <h1 class="gsap-fade-up">Scale with <br><span style="color: var(--accent-primary)">Certainty.</span></h1>
+        <p class="gsap-fade-up" style="animation-delay: 0.2s;">
+            Atelier Studios is a performance-driven digital marketing agency built on a singular mission: to scale brands that refuse to be normal. We don't just run ads; we architect comprehensive digital growth engines across Search, Social, and Email that captivate, convert, and drive measurable ROI.
+        </p>
+    </section>
+
+    <!-- Core Values -->
+    <section class="section-container">
+        <h2 class="section-title gsap-fade-up" style="text-align: center; font-size: 3rem;">Our Core Values</h2>
+        <div class="values-grid">
+            <div class="value-card gsap-fade-up">
+                <h3>01. Audacity</h3>
+                <p>We reject cookie-cutter templates. Every project is an opportunity to push boundaries, experiment with new technologies, and create something genuinely bold.</p>
+            </div>
+            <div class="value-card gsap-fade-up">
+                <h3>02. Craftsmanship</h3>
+                <p>Digital real estate requires a solid foundation. From pixel-perfect UI designs to heavily optimized backend architectures, we care deeply about the invisible details.</p>
+            </div>
+            <div class="value-card gsap-fade-up">
+                <h3>03. Transparency</h3>
+                <p>No hidden fees, no jargon, no smoke and mirrors. We believe in building true partnerships with our clients based on <span class="accent-text" style="color:var(--text-primary);">pure & honest</span> communication.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- What Makes Us Different -->
+    <section class="section-container">
+        <div class="why-us-container gsap-fade-up">
+            <h2 style="font-family: var(--font-header); font-size: 3rem; margin-bottom: 1.5rem;">Why Atelier Studios?</h2>
+            <p style="font-size: 1.2rem; color: var(--text-secondary); max-width: 800px; margin: 0 auto 3rem; line-height: 1.8;">
+                Most marketing agencies treat you like a ticket number, burning through your budget with zero accountability. We treat you like a collaborator. 
+                What sets us apart isn't just our creative—it's our obsession with performance. We integrate directly into your vision, leveraging data-driven insights, hyper-targeted ad strategies, and compelling copywriting to build campaigns that actually generate revenue. 
+                We are a boutique team by design, meaning you work directly with the strategists and creatives scaling your brand.
+            </p>
+            <a href="/quote.html" class="btn btn-primary cursor-link" style="padding: 1rem 3rem; font-size: 1.1rem;">Work With Us</a>
+        </div>
+    </section>
+
+    <!-- Team Section -->
+    <section class="section-container" style="margin-bottom: 4rem;">
+        <h2 class="section-title gsap-fade-up" style="text-align: center; font-size: 3rem;">The Creatives</h2>
+        <div class="team-grid">
+            <div class="team-member gsap-fade-up">
+                <!-- Blank Illustration Placeholder -->
+                <div class="team-photo" style="background: rgba(255,255,255,0.02); display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.3); font-family: monospace;">[ Image Placeholder ]</div>
+                <h4 class="team-name">Founder 1</h4>
+                <div class="team-role">Founder & Creative Director</div>
+            </div>
+            <div class="team-member gsap-fade-up">
+                <!-- Blank Illustration Placeholder -->
+                <div class="team-photo" style="background: rgba(255,255,255,0.02); display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.3); font-family: monospace;">[ Image Placeholder ]</div>
+                <h4 class="team-name">Founder 2</h4>
+                <div class="team-role">Founder & Tech Lead</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- GSAP & ScrollTrigger -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    
+    <script>
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Custom Cursor Logic
+        const cursor = document.getElementById('custom-cursor');
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+        });
+
+        document.querySelectorAll('.cursor-link').forEach(link => {
+            link.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+            link.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+        });
+
+        // Fade Up Animations
+        gsap.utils.toArray('.gsap-fade-up').forEach(el => {
+            gsap.from(el, {
+                scrollTrigger: {
+                    trigger: el,
+                    start: "top 85%"
+                },
+                y: 50,
+                opacity: 0,
+                duration: 1,
+                ease: "power3.out"
+            });
+        });
+    </script>
+</body>
+</html>

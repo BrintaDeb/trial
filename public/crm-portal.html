@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM & Analytics - Atelier Studios</title>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=DM+Sans:wght@400;500;700&family=Titan+One&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles/main.css">
+    <style>
+        .crm-container { padding: 8rem 5% 4rem; max-width: 1400px; margin: 0 auto; position: relative; z-index: 10; }
+        
+        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 3rem; }
+        @media(max-width: 768px) { .dashboard-grid { grid-template-columns: 1fr; } }
+        
+        .metric-card { background: rgba(0,0,0,0.3); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 2rem; text-align: center; }
+        .metric-card h3 { color: var(--text-secondary); font-size: 1.2rem; margin-bottom: 0.5rem; font-family: var(--font-body); text-transform: uppercase; letter-spacing: 2px;}
+        .metric-card .value { font-size: 4rem; font-family: var(--font-header); color: var(--accent-primary); line-height: 1; }
+        
+        /* Terminal UI */
+        .terminal-card { background: #1a1a1a; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); overflow: hidden; display: flex; flex-direction: column; height: 350px; }
+        .terminal-header { background: #111; padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; gap: 8px; align-items: center;}
+        .term-dot { width: 12px; height: 12px; border-radius: 50%; }
+        .term-dot.red { background: #ff5f56; }
+        .term-dot.yellow { background: #ffbd2e; }
+        .term-dot.green { background: #27c93f; }
+        .terminal-body { padding: 1.5rem; overflow-y: auto; flex: 1; font-family: monospace; color: #a3a3a3; font-size: 0.9rem; }
+        .terminal-log { margin-bottom: 0.5rem; }
+        .terminal-log.system { color: #818cf8; }
+        .terminal-log.success { color: #34d399; }
+        .terminal-log.error { color: #ef4444; }
+        .terminal-log.user { color: #fff; }
+        
+        .terminal-input-wrapper { display: flex; padding: 1rem; background: #111; border-top: 1px solid rgba(255,255,255,0.1); }
+        .terminal-prompt { color: #34d399; font-family: monospace; margin-right: 0.5rem; align-self: center; }
+        .terminal-input { flex: 1; background: transparent; border: none; color: #fff; font-family: monospace; font-size: 1rem; outline: none; }
+        
+        /* Table UI */
+        .glass-table-container { background: rgba(0,0,0,0.3); backdrop-filter: blur(15px); border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th, td { padding: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        th { color: var(--text-secondary); font-weight: 500; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
+        tr:hover { background: rgba(255,255,255,0.02); }
+        
+        .status-badge { display: inline-block; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; }
+        .status-new { background: rgba(99, 102, 241, 0.2); color: #818cf8; }
+        .status-contacted { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+        .status-qualified { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+        .status-lost { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        .status-converted { background: rgba(236, 72, 153, 0.2); color: #f472b6; }
+    </style>
+</head>
+<body>
+    <div id="tsparticles"></div>
+    <nav class="navbar glass-panel">
+        <div class="logo">Atelier Studios<span>.</span></div>
+        <ul class="nav-links">
+            <li><a href="/admin-portal.html" class="cursor-link">Admin Portal</a></li>
+            <li><a href="#" class="cursor-link" onclick="logout()">Logout</a></li>
+        </ul>
+    </nav>
+    
+    <div class="crm-container">
+        <h2 class="gradient-text" style="font-size:3rem; margin-bottom:0.5rem;">CRM & Analytics</h2>
+        <p style="margin-bottom: 3rem; color: var(--text-secondary);">Manage inbound leads via the trainable command interface.</p>
+        
+        <div class="dashboard-grid">
+            <!-- Analytics -->
+            <div style="display: flex; flex-direction: column; gap: 2rem;">
+                <div class="metric-card">
+                    <h3>Total Leads</h3>
+                    <div class="value" id="metric-total">0</div>
+                </div>
+                <div class="metric-card">
+                    <h3>Conversion Rate</h3>
+                    <div class="value" id="metric-conversion">0%</div>
+                </div>
+            </div>
+            
+            <!-- Terminal CRM -->
+            <div class="terminal-card">
+                <div class="terminal-header">
+                    <div class="term-dot red"></div>
+                    <div class="term-dot yellow"></div>
+                    <div class="term-dot green"></div>
+                    <span style="margin-left: 10px; font-family: monospace; color: #666; font-size: 0.8rem;">crm-engine ~ root</span>
+                </div>
+                <div class="terminal-body" id="terminal-body">
+                    <div class="terminal-log system">Atelier CRM OS v1.0 initialized.</div>
+                    <div class="terminal-log system">Type <span style="color:#fff">/help</span> for commands. Try <span style="color:#fff">/status 1 contacted</span> or <span style="color:#fff">/delete 2</span>.</div>
+                </div>
+                <form class="terminal-input-wrapper" id="terminal-form">
+                    <span class="terminal-prompt">➜</span>
+                    <input type="text" id="terminal-input" class="terminal-input" autocomplete="off" spellcheck="false" placeholder="Type a command...">
+                </form>
+            </div>
+        </div>
+
+        <h3 style="margin-bottom: 1.5rem; font-family: var(--font-header);">Lead Pipeline</h3>
+        <div class="glass-table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Project Type</th>
+                        <th>Budget</th>
+                        <th>Status</th>
+                        <th>AI Score</th>
+                    </tr>
+                </thead>
+                <tbody id="leads-table-body">
+                    <tr><td colspan="6" style="text-align:center;">Loading CRM Data...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Check Authentication
+        const checkAuth = async () => {
+            try {
+                const res = await fetch('/api/leads');
+                if (!res.ok) {
+                    window.location.href = '/login.html';
+                }
+                const data = await res.json();
+                if (data.success) {
+                    renderLeads(data.leads);
+                }
+            } catch (err) {
+                window.location.href = '/login.html';
+            }
+        };
+
+        const renderLeads = (leads) => {
+            const tbody = document.getElementById('leads-table-body');
+            document.getElementById('metric-total').innerText = leads.length;
+            
+            const converted = leads.filter(l => l.status === 'converted').length;
+            const rate = leads.length > 0 ? Math.round((converted / leads.length) * 100) : 0;
+            document.getElementById('metric-conversion').innerText = rate + '%';
+
+            if (leads.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No leads found.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = leads.map(l => `
+                <tr>
+                    <td style="font-family: monospace;">#${l.id}</td>
+                    <td>
+                        <div style="font-weight: 600; color: #fff;">${l.name}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">${l.company || l.email}</div>
+                    </td>
+                    <td>${l.projectType}</td>
+                    <td>${l.budget}</td>
+                    <td><span class="status-badge status-${l.status}">${l.status}</span></td>
+                    <td>
+                        <div style="display:flex; align-items:center; gap: 10px;">
+                            <div style="width: 50px; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow:hidden;">
+                                <div style="height:100%; width: ${l.score}%; background: ${l.score > 75 ? '#34d399' : l.score > 40 ? '#fbbf24' : '#ef4444'};"></div>
+                            </div>
+                            <span style="font-family:monospace; font-size:0.8rem;">${l.score}</span>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        };
+
+        // Terminal Logic
+        const termBody = document.getElementById('terminal-body');
+        
+        function appendLog(msg, type = 'system') {
+            const div = document.createElement('div');
+            div.className = `terminal-log ${type}`;
+            div.innerHTML = msg;
+            termBody.appendChild(div);
+            termBody.scrollTop = termBody.scrollHeight;
+        }
+
+        document.getElementById('terminal-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const input = document.getElementById('terminal-input');
+            const cmd = input.value.trim();
+            if (!cmd) return;
+            
+            appendLog(`➜ ${cmd}`, 'user');
+            input.value = '';
+
+            if (cmd.toLowerCase() === '/help') {
+                appendLog(`Commands: <br>- /status [id] [new, contacted, qualified, lost, converted]<br>- /delete [id]<br>- /clear`, 'system');
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/crm/command', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ command: cmd })
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    appendLog(data.message, 'success');
+                    if (data.action === 'refresh') {
+                        checkAuth(); // refresh table
+                    }
+                } else {
+                    appendLog(`Error: ${data.message}`, 'error');
+                }
+            } catch (err) {
+                appendLog('Network error executing command.', 'error');
+            }
+        });
+
+        // Logout logic
+        async function logout() {
+            await fetch('/api/logout', { method: 'POST' });
+            window.location.href = '/login.html';
+        }
+
+        checkAuth();
+    </script>
+</body>
+</html>

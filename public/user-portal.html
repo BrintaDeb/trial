@@ -1,51 +1,172 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Client Dashboard - Elevate</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@600;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client Portal - Atelier Studios</title>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=DM+Sans:wght@400;500;700&family=Titan+One&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/styles/main.css">
     <style>
-        .portal-container { padding: 8rem 5% 4rem; max-width: 800px; margin: 0 auto; z-index: 10; position: relative; text-align: center;}
+        body { padding-top: 100px; }
+        .dashboard-container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        
+        .welcome-section { margin-bottom: 3rem; }
+        .welcome-section h1 { font-size: 3rem; font-family: var(--font-header); margin-bottom: 0.5rem; }
+        
+        .data-section { background: rgba(0,0,0,0.2); backdrop-filter: blur(10px); border-radius: 20px; padding: 2.5rem; margin-bottom: 3rem; border: 1px solid rgba(255,255,255,0.03); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .data-section h2 { margin-top: 0; margin-bottom: 2rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 1rem; font-size: 1.5rem; }
+        
+        /* Service Cards */
+        .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
+        .service-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 12px; }
+        .service-card h4 { font-family: var(--font-header); font-size: 1.5rem; margin-bottom: 1rem; color: var(--accent-primary); }
+        .service-card ul { list-style: none; padding: 0; margin: 0 0 1.5rem 0; color: var(--text-secondary); }
+        .service-card ul li { margin-bottom: 0.5rem; padding-left: 1.5rem; position: relative; }
+        .service-card ul li::before { content: "→"; position: absolute; left: 0; color: var(--accent-primary); }
+        .service-price { font-size: 1.25rem; font-weight: bold; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem; }
+        
+        /* Invoices Table */
+        .table-wrapper { overflow-x: auto; width: 100%; }
+        table { width: 100%; border-collapse: collapse; white-space: nowrap; }
+        th, td { padding: 1.5rem 1rem; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.03); }
+        th { color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem; }
+        tbody tr { transition: background 0.3s; }
+        tbody tr:hover { background: rgba(255,255,255,0.02); }
+        .badge { padding: 0.4rem 0.8rem; border-radius: 6px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+        .badge.pending { background: rgba(245, 158, 11, 0.15); color: #fcd34d; }
     </style>
 </head>
 <body>
-    <div id="tsparticles"></div>
-    <nav class="navbar glass-panel">
-        <div class="logo">Elevate<span>.</span></div>
-        <ul class="nav-links">
-            <li><a href="/quote.html" class="btn btn-primary glass-btn">New Quote</a></li>
-            <li><a href="#" id="logoutBtn" style="color:#ef4444">Logout</a></li>
-        </ul>
+    <nav class="site-nav">
+        <a href="/" class="logo">ATELIER.</a>
+        <div class="nav-links">
+            <button id="logoutBtn" class="btn btn-secondary">Logout</button>
+        </div>
     </nav>
 
-    <div class="portal-container">
-        <h2 class="gradient-text">Welcome to your Dashboard</h2>
-        <p style="color: var(--text-secondary); margin-bottom: 2rem;">Manage your active projects and quotes here.</p>
-        <div class="glass-card">
-            <h3>No Active Projects</h3>
-            <p style="margin-top:1rem; color:var(--text-secondary)">You currently do not have any active projects underway. Request a new quote to get started.</p>
+    <div class="dashboard-container">
+        <div class="welcome-section">
+            <h1 class="gradient-text">Welcome Back.</h1>
+            <p style="color: var(--text-secondary); font-size: 1.1rem;">Manage your active campaigns and billing.</p>
+        </div>
+
+        <div class="data-section">
+            <h2>Your Requested Services</h2>
+            <div class="services-grid" id="servicesGrid">
+                <p style="color: var(--text-secondary);">Loading your services...</p>
+            </div>
+        </div>
+
+        <div class="data-section">
+            <h2>Billing & Invoices</h2>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="invoicesTableBody">
+                        <tr><td colspan="5" style="text-align:center; color: var(--text-secondary);">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
-    
-    <script src="https://cdn.jsdelivr.net/npm/tsparticles-engine@2.12.0/tsparticles.engine.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/tsparticles-basic@2.12.0/tsparticles.basic.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
+
     <script>
-        tsParticles.load("tsparticles", { fpsLimit: 30, particles: { color: { value: ["#ec4899"] }, links: { enable: true, opacity: 0.1 }, move: { enable: true, speed: 0.2 }, number: { value: 20 }, opacity: { value: 0.1 } } });
+        // Data Fetching
+        async function fetchClientData() {
+            try {
+                const res = await fetch('/api/quotes');
+                if (res.status === 401 || res.status === 403) {
+                    window.location.href = '/login.html'; // Guard
+                    return;
+                }
+                const data = await res.json();
+                
+                if (data.success) {
+                    const servicesGrid = document.getElementById('servicesGrid');
+                    const invoicesBody = document.getElementById('invoicesTableBody');
+                    
+                    if (data.quotes.length === 0) {
+                        servicesGrid.innerHTML = '<p style="color: var(--text-secondary);">You have not requested any services yet.</p>';
+                        invoicesBody.innerHTML = '<tr><td colspan="5" style="text-align:center; color: var(--text-secondary);">No invoices found.</td></tr>';
+                    } else {
+                        // Render Services from latest quote
+                        const latestQuote = data.quotes[data.quotes.length - 1];
+                        
+                        let servicesHTML = '';
+                        
+                        latestQuote.selections.forEach(service => {
+                            let detailsHTML = '';
+                            
+                            // Customize the details based on the service name
+                            if (service.name.includes('Search') || service.name.includes('Dominance')) {
+                                detailsHTML = `<li>Tier: ${service.name}</li><li>Monthly Reporting</li><li>Keyword Tracking</li>`;
+                            } else if (service.name.includes('Ads') || service.name.includes('Omnichannel')) {
+                                detailsHTML = `<li>Tier: ${service.name}</li><li>Ad Copy & Graphics</li><li>Bid Management</li>`;
+                            } else if (service.name.includes('Social') || service.name.includes('Presence') || service.name.includes('Growth')) {
+                                detailsHTML = `<li>Tier: ${service.name}</li><li>Grid Planning</li><li>Community Engagement</li>`;
+                            } else if (service.name.includes('Nurture') || service.name.includes('Email')) {
+                                detailsHTML = `<li>Tier: ${service.name}</li><li>Drip Campaigns</li><li>Newsletters</li>`;
+                            } else {
+                                detailsHTML = `<li>Service: ${service.name}</li>`;
+                            }
+
+                            servicesHTML += `
+                            <div class="service-card">
+                                <h4>${service.name}</h4>
+                                <ul>${detailsHTML}</ul>
+                                <div class="service-price">₹${service.price.toLocaleString()} /mo</div>
+                            </div>`;
+                        });
+
+                        if (latestQuote.hours > 0) {
+                            servicesHTML += `
+                            <div class="service-card">
+                                <h4>Ad-Hoc Hourly Tasks</h4>
+                                <ul>
+                                    <li>${latestQuote.hours} Hours Reserved</li>
+                                    <li>Flexible Consulting & Updates</li>
+                                </ul>
+                                <div class="service-price">₹${(latestQuote.hours * 1500).toLocaleString()} /mo</div>
+                            </div>`;
+                        }
+
+                        if(servicesHTML === '') {
+                             servicesGrid.innerHTML = '<p style="color: var(--text-secondary);">No active retainers found.</p>';
+                        } else {
+                            servicesGrid.innerHTML = servicesHTML;
+                        }
+
+                        // Render Invoice History based on quotes
+                        invoicesBody.innerHTML = data.quotes.map(q => `
+                            <tr>
+                                <td>${q.istTimestamp}</td>
+                                <td>Monthly Retainer (Quote #${q.id})</td>
+                                <td>₹${q.total.toLocaleString()}</td>
+                                <td><span class="badge pending">${q.status || 'Pending'}</span></td>
+                                <td><a href="#" class="cursor-link" style="color:var(--accent-primary)">Pay Now</a></td>
+                            </tr>
+                        `).join('');
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to load client data:", err);
+            }
+        }
 
         document.getElementById('logoutBtn').addEventListener('click', async () => {
             await fetch('/api/logout', { method: 'POST' });
-            window.location.href = '/';
+            window.location.href = '/login.html';
         });
+
+        fetchClientData();
     </script>
-<script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.19/bundled/lenis.min.js"></script>
-<script>
-    const lenis = new Lenis({ duration: 1.2, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)) });
-    function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
-    requestAnimationFrame(raf);
-</script>
-<script src="/scripts/chatbot.js"></script>
 </body>
 </html>
-

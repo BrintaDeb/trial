@@ -1,7 +1,7 @@
-﻿// Inject Chatbot HTML
+// Inject Chatbot HTML
 const chatbotHTML = 
 <style>
-    #elevate-chatbot {
+    #atelier-chatbot {
         position: fixed;
         bottom: 20px;
         right: 20px;
@@ -114,14 +114,14 @@ const chatbotHTML =
         font-weight: 600;
     }
 </style>
-<div id="elevate-chatbot">
+<div id="atelier-chatbot">
     <div id="chatbot-window">
         <div class="chat-header">
-            <span>Elevate AI</span>
+            <span>Atelier AI</span>
             <button id="close-chat" style="background:none;border:none;color:white;cursor:pointer;font-size:1.2rem;">&times;</button>
         </div>
         <div class="chat-body" id="chat-body">
-            <div class="message bot">Hello! I'm Elevate AI. Ask me anything about our services.</div>
+            <div class="message bot">Hello! I'm Atelier AI. Ask me anything about our services.</div>
         </div>
         <form class="chat-input-area" id="chat-form">
             <input type="text" id="chat-input" placeholder="Type your question..." required autocomplete="off">
