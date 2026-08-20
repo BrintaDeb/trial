@@ -26,13 +26,11 @@ if (fs.existsSync(DB_FILE)) {
     }
 }
 
-// Helper to save database
+// Helper to save database (Asynchronous for performance)
 const saveDb = () => {
-    try {
-        fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
-    } catch (e) {
-        console.error("Failed to save database.json", e);
-    }
+    fs.writeFile(DB_FILE, JSON.stringify(db, null, 2), (err) => {
+        if (err) console.error("Failed to save database.json", err);
+    });
 };
 
 const app = express();
