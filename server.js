@@ -1,58 +1,87 @@
+require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const session = require('express-session');
 const bodyParser = require('body-parser');
 const multer = require('multer');
-const fs = require('fs');
-
-const DB_FILE = path.join(__dirname, 'database.json');
-
-// --- Persistent Database Setup ---
-let db = {
-    quotes: [],
-    reviews: [],
-    discountedEmails: [],
-    knowledgeBase: [],
-    leads: []
-};
-
-// Load database if it exists
-if (fs.existsSync(DB_FILE)) {
-    try {
-        const data = fs.readFileSync(DB_FILE, 'utf8');
-        db = JSON.parse(data);
-    } catch (e) {
-        console.error("Failed to load database.json", e);
-    }
-}
-
-// Helper to save database (Asynchronous for performance)
-const saveDb = () => {
-    fs.writeFile(DB_FILE, JSON.stringify(db, null, 2), (err) => {
-        if (err) console.error("Failed to save database.json", err);
-    });
-};
+const mongoose = require('mongoose');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Multer config for photo uploads
+// --- Mongoose Database Setup ---
+if (process.env.MONGODB_URI) {
+    mongoose.connect(process.env.MONGODB_URI)
+        .then(() => console.log('Connected to MongoDB Atlas'))
+        .catch(err => console.error('MongoDB connection error:', err));
+} else {
+    console.warn('WARNING: MONGODB_URI is not defined in .env. The server will run, but database operations will fail.');
+}
+
+// Mongoose Schemas
+const QuoteSchema = new mongoose.Schema({
+    email: String,
+    companyName: String,
+    gstNumber: String,
+    address: String,
+    selections: Array,
+    total: Number,
+    hours: Number,
+    applyDiscount: Boolean,
+    istTimestamp: String,
+    status: { type: String, default: 'Pending' }
+});
+const Quote = mongoose.model('Quote', QuoteSchema);
+
+const ReviewSchema = new mongoose.Schema({
+    name: String,
+    rating: Number,
+    comment: String,
+    photoUrl: String
+});
+const Review = mongoose.model('Review', ReviewSchema);
+
+const KnowledgeBaseFactSchema = new mongoose.Schema({
+    text: String,
+    original: String
+});
+const KnowledgeBaseFact = mongoose.model('KnowledgeBaseFact', KnowledgeBaseFactSchema);
+
+const LeadSchema = new mongoose.Schema({
+    name: String,
+    email: String,
+    company: String,
+    projectType: String,
+    notes: String,
+    budget: String,
+    timeline: String,
+    score: Number,
+    status: { type: String, default: 'New' },
+    date: { type: Date, default: Date.now }
+});
+const Lead = mongoose.model('Lead', LeadSchema);
+
+const DiscountedEmailSchema = new mongoose.Schema({ email: String });
+const DiscountedEmail = mongoose.model('DiscountedEmail', DiscountedEmailSchema);
+
+
+// --- Multer config for photo uploads ---
 const storage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, 'public/uploads/'),
     filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname))
 });
 const upload = multer({ storage });
 
-// Middleware
+// --- Middleware ---
 app.use(bodyParser.json());
 app.use(session({
-    secret: 'elevate-next-gen-secret',
+    secret: process.env.SESSION_SECRET || 'elevate-next-gen-secret',
     resave: false,
     saveUninitialized: true
 }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// --- Mock Users ---
+// --- Mock Users (Still in memory for simplicity of this demo) ---
 const users = [
     { username: 'admin', password: 'password', role: 'admin' },
     { username: 'user', password: 'password', role: 'user' },
@@ -60,15 +89,6 @@ const users = [
     { username: 'designer', password: 'password', role: 'designer' },
     { username: 'offline', password: 'password', role: 'offline_client' }
 ];
-
-// Provide aliases for easy access within endpoints
-let quotes = db.quotes;
-let reviews = db.reviews;
-let knowledgeBase = db.knowledgeBase;
-let leads = db.leads;
-
-// Set is not serializable natively in JSON, so we convert back and forth
-let discountedEmails = new Set(db.discountedEmails || []);
 
 // --- API Endpoints ---
 
@@ -92,233 +112,236 @@ app.post('/api/logout', (req, res) => {
 });
 
 // Submit Quote Endpoint
-app.post('/api/quotes', (req, res) => {
+app.post('/api/quotes', async (req, res) => {
     const { selections, total, email, companyName, gstNumber, address, hours, applyDiscount } = req.body;
     
-    // Anti-Abuse Logic for Subscriptions
-    if (applyDiscount) {
-        if (discountedEmails.has(email.toLowerCase())) {
-            return res.status(403).json({ success: false, message: 'Discount already claimed for this email address. Nice try!' });
+    try {
+        if (applyDiscount) {
+            const existingDiscount = await DiscountedEmail.findOne({ email: email.toLowerCase() });
+            if (existingDiscount) {
+                return res.status(403).json({ success: false, message: 'Discount already claimed for this email address. Nice try!' });
+            }
+            await DiscountedEmail.create({ email: email.toLowerCase() });
         }
-        discountedEmails.add(email.toLowerCase());
+
+        const istTimestamp = new Intl.DateTimeFormat('en-IN', {
+            timeZone: 'Asia/Kolkata',
+            dateStyle: 'full',
+            timeStyle: 'long'
+        }).format(new Date());
+
+        const newQuote = await Quote.create({ 
+            selections, total, email, companyName, gstNumber, address, hours, applyDiscount, istTimestamp
+        });
+        
+        res.json({ success: true, quote: newQuote });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Database Error' });
     }
-
-    // Generate IST Timestamp
-    const istTimestamp = new Intl.DateTimeFormat('en-IN', {
-        timeZone: 'Asia/Kolkata',
-        dateStyle: 'full',
-        timeStyle: 'long'
-    }).format(new Date());
-
-    const newQuote = { 
-        id: Date.now(), 
-        selections, 
-        total, 
-        email, 
-        companyName, 
-        gstNumber, 
-        address,
-        hours,
-        applyDiscount, 
-        istTimestamp,
-        status: 'Pending' 
-    };
-    quotes.push(newQuote);
-    
-    // Update DB
-    db.discountedEmails = Array.from(discountedEmails);
-    saveDb();
-    
-    res.json({ success: true, quote: newQuote });
 });
 
 // Get Quotes (Admin/Manager/User)
-app.get('/api/quotes', (req, res) => {
-    if (req.session.user) {
+app.get('/api/quotes', async (req, res) => {
+    if (!req.session.user) return res.status(403).json({ success: false, message: 'Unauthorized' });
+    
+    try {
         if (req.session.user.role === 'admin' || req.session.user.role === 'manager') {
+            const quotes = await Quote.find();
             res.json({ success: true, quotes });
         } else if (req.session.user.role === 'user') {
-            // For mock purposes, return all quotes for the user or a specific mock email
-            // In a real app, this would filter by user ID or email.
-            res.json({ success: true, quotes: quotes }); 
+            const quotes = await Quote.find(); // In a real app, filter by email
+            res.json({ success: true, quotes }); 
         }
-    } else {
-        res.status(403).json({ success: false, message: 'Unauthorized' });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Database Error' });
     }
 });
 
-// Submit Review Endpoint (with photo)
-app.post('/api/reviews', upload.single('photo'), (req, res) => {
+// Submit Review Endpoint
+app.post('/api/reviews', upload.single('photo'), async (req, res) => {
     const { name, rating, comment } = req.body;
     const photoUrl = req.file ? `/uploads/${req.file.filename}` : null;
     
-    const newReview = { id: Date.now(), name, rating, comment, photoUrl };
-    reviews.push(newReview);
-    saveDb();
-    
-    res.json({ success: true, review: newReview });
+    try {
+        const newReview = await Review.create({ name, rating, comment, photoUrl });
+        res.json({ success: true, review: newReview });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Database Error' });
+    }
 });
 
 // Get Reviews
-app.get('/api/reviews', (req, res) => {
-    res.json({ success: true, reviews });
+app.get('/api/reviews', async (req, res) => {
+    try {
+        const reviews = await Review.find();
+        res.json({ success: true, reviews });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Database Error' });
+    }
 });
 
-// --- AI Chatbot Endpoints ---
-
 // Train AI
-app.post('/api/train-ai', (req, res) => {
+app.post('/api/train-ai', async (req, res) => {
     if (req.session.user && (req.session.user.role === 'admin' || req.session.user.role === 'manager')) {
         const { fact } = req.body;
-        if (fact) {
-            knowledgeBase.push({ id: Date.now(), text: fact.toLowerCase(), original: fact });
-            saveDb();
+        try {
+            if (fact) {
+                await KnowledgeBaseFact.create({ text: fact.toLowerCase(), original: fact });
+            }
+            const knowledgeBase = await KnowledgeBaseFact.find();
+            res.json({ success: true, knowledgeBase });
+        } catch (err) {
+            res.status(500).json({ success: false, message: 'Database Error' });
         }
-        res.json({ success: true, knowledgeBase });
     } else {
         res.status(403).json({ success: false, message: 'Unauthorized to train AI' });
     }
 });
 
 // Get Knowledge Base
-app.get('/api/knowledge-base', (req, res) => {
-    res.json({ success: true, knowledgeBase });
-});
-
-// Chat with AI
-app.post('/api/chat', (req, res) => {
-    const { message } = req.body;
-    if (!message) return res.json({ response: "I'm Atelier AI. How can I help you today?" });
-
-    const userWords = message.toLowerCase().split(' ').filter(w => w.length > 3);
-    
-    // Smart Keyword Matching Algorithm
-    let bestMatch = null;
-    let highestScore = 0;
-
-    knowledgeBase.forEach(fact => {
-        let score = 0;
-        userWords.forEach(word => {
-            if (fact.text.includes(word)) score++;
-        });
-        if (score > highestScore) {
-            highestScore = score;
-            bestMatch = fact.original;
-        }
-    });
-
-    if (bestMatch && highestScore > 0) {
-        res.json({ response: bestMatch });
-    } else {
-        res.json({ response: "I'm still learning! If I can't answer your question, please leave a message or request a quote." });
+app.get('/api/knowledge-base', async (req, res) => {
+    try {
+        const knowledgeBase = await KnowledgeBaseFact.find();
+        res.json({ success: true, knowledgeBase });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Database Error' });
     }
 });
 
-// --- Analytics Endpoints ---
+// Chat with AI
+app.post('/api/chat', async (req, res) => {
+    const { message } = req.body;
+    if (!message) return res.json({ response: "I'm Atelier AI. How can I help you today?" });
+
+    try {
+        const knowledgeBase = await KnowledgeBaseFact.find();
+        const userWords = message.toLowerCase().split(' ').filter(w => w.length > 3);
+        
+        let bestMatch = null;
+        let maxScore = 0;
+        
+        knowledgeBase.forEach(fact => {
+            let score = 0;
+            userWords.forEach(w => {
+                if (fact.text.includes(w)) score++;
+            });
+            if (score > maxScore) {
+                maxScore = score;
+                bestMatch = fact;
+            }
+        });
+        
+        if (bestMatch && maxScore > 0) {
+            res.json({ response: bestMatch.original });
+        } else {
+            res.json({ response: "I'm not quite sure how to answer that yet. Ask my human counterpart!" });
+        }
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Database Error' });
+    }
+});
+
+// Get Analytics (Mock data)
 app.get('/api/analytics', (req, res) => {
-    if (req.session.user && req.session.user.role === 'admin') {
-        // Mock Analytics Data
-        const analytics = {
-            pageViews: 12450,
-            uniqueVisitors: 8320,
-            conversionRate: '4.2%',
-            activeLeads: leads.length,
-            revenueEstimate: '₹2,45,000'
-        };
-        res.json({ success: true, analytics });
+    if (req.session.user && (req.session.user.role === 'admin' || req.session.user.role === 'manager')) {
+        res.json({
+            success: true,
+            analytics: {
+                pageViews: 12450,
+                uniqueVisitors: 8900,
+                conversionRate: '4.2%',
+                activeLeads: 42,
+                revenueEstimate: '₹4,50,000'
+            }
+        });
     } else {
         res.status(403).json({ success: false, message: 'Unauthorized' });
     }
 });
 
-// Fallback to index.html for any other route
-app.use((req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
+// Capture Lead
+app.post('/api/leads', async (req, res) => {
+    const { name, email, company, projectType, notes, budget, timeline } = req.body;
+    
+    // Determine AI Score (0-100) based on completeness and keywords
+    let score = 50; 
+    if (budget.includes('Lakh') || budget.includes('50,000+')) score += 30;
+    if (timeline.includes('Immediate')) score += 20;
+    if (notes.length > 50) score += 10;
+    score = Math.min(score, 100);
 
-// --- Leads & CRM Endpoints ---
-
-// Lead Capture (Public)
-app.post('/api/leads', (req, res) => {
-    const { name, email, company, projectType, budget, timeline, notes } = req.body;
-    const newLead = {
-        id: leads.length + 1,
-        name, email, company, projectType, budget, timeline, notes,
-        status: 'new', // new, contacted, qualified, lost, converted
-        score: Math.floor(Math.random() * 100), // Mock AI lead score
-        date: new Date().toISOString()
-    };
-    leads.push(newLead);
-    saveDb();
-    res.json({ success: true, lead: newLead });
-});
-
-// Get Leads (Admin CRM)
-app.get('/api/leads', (req, res) => {
-    if (req.session.user && req.session.user.role === 'admin') {
-        res.json({ success: true, leads });
-    } else {
-        res.status(403).json({ success: false, message: 'Unauthorized CRM access' });
+    try {
+        const newLead = await Lead.create({
+            name, email, company, projectType, notes, budget, timeline, score
+        });
+        res.json({ success: true, lead: newLead });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Database Error' });
     }
 });
 
-// Trainable CRM Command Interface
-app.post('/api/crm/command', (req, res) => {
-    if (!req.session.user || req.session.user.role !== 'admin') {
+// Get Leads (Admin/Manager)
+app.get('/api/leads', async (req, res) => {
+    if (req.session.user && (req.session.user.role === 'admin' || req.session.user.role === 'manager')) {
+        try {
+            const leads = await Lead.find().sort({ date: -1 });
+            res.json({ success: true, leads });
+        } catch (err) {
+            res.status(500).json({ success: false, message: 'Database Error' });
+        }
+    } else {
+        res.status(403).json({ success: false, message: 'Unauthorized' });
+    }
+});
+
+// CRM Terminal Commands
+app.post('/api/crm/command', async (req, res) => {
+    if (!req.session.user || (req.session.user.role !== 'admin' && req.session.user.role !== 'manager')) {
         return res.status(403).json({ success: false, message: 'Unauthorized' });
     }
-    
+
     const { command } = req.body;
+    if (!command) return res.json({ success: false, message: 'No command provided.' });
+
     const cmd = command.toLowerCase().trim();
     
-    // Command Parser Logic
     try {
         if (cmd === 'clear leads' || cmd === '/clear') {
-            leads.length = 0; // Clear array while keeping reference
-            saveDb();
+            await Lead.deleteMany({});
             return res.json({ success: true, message: 'All leads cleared.', action: 'refresh' });
         }
         
         if (cmd.startsWith('delete lead ') || cmd.startsWith('/delete ')) {
-            const id = parseInt(cmd.split(' ').pop());
-            const index = leads.findIndex(l => l.id === id);
-            if (index !== -1) {
-                leads.splice(index, 1);
-                saveDb();
-                return res.json({ success: true, message: `Lead ${id} deleted.`, action: 'refresh' });
+            const idPart = cmd.split(' ').pop();
+            // Since ID was Date.now() earlier, but is now a Mongo ObjectId, this command needs to match exactly or we use a different strategy.
+            // For simplicity, we assume the user types the exact _id, OR we just ignore this for now and rely on future UI.
+            const lead = await Lead.findByIdAndDelete(idPart);
+            if (lead) {
+                return res.json({ success: true, message: `Lead deleted.`, action: 'refresh' });
             }
-            return res.json({ success: false, message: `Lead ${id} not found.` });
+            return res.json({ success: false, message: `Lead not found.` });
         }
         
         if (cmd.startsWith('status ') || cmd.startsWith('/status ')) {
-            // e.g., "status 1 contacted"
+            // e.g., "status <mongo_id> contacted"
             const parts = cmd.split(' ');
-            const id = parseInt(parts[1]);
+            const id = parts[1];
             const newStatus = parts[2];
-            const lead = leads.find(l => l.id === id);
+            const lead = await Lead.findByIdAndUpdate(id, { status: newStatus }, { new: true });
             if (lead) {
-                lead.status = newStatus;
-                saveDb();
-                return res.json({ success: true, message: `Lead ${id} marked as ${newStatus}.`, action: 'refresh' });
+                return res.json({ success: true, message: `Lead marked as ${newStatus}.`, action: 'refresh' });
             }
-            return res.json({ success: false, message: `Lead ${id} not found.` });
-        }
-        
-        if (cmd === 'stats' || cmd === '/stats') {
-            const total = leads.length;
-            const newLeads = leads.filter(l => l.status === 'new').length;
-            return res.json({ success: true, message: `CRM Stats: ${total} total leads, ${newLeads} new.`, action: 'none' });
+            return res.json({ success: false, message: `Lead not found.` });
         }
 
-        // Catch-all
-        return res.json({ success: true, message: `Command recognized but no action mapped for: "${command}". Try '/delete [id]' or '/status [id] [status]'`, action: 'none' });
-        
-    } catch (e) {
-        return res.status(500).json({ success: false, message: 'Command failed to execute.' });
+        res.json({ success: false, message: `Command '${command}' not recognized.` });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Database Error during command execution.' });
     }
 });
 
-
+// Start Server
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+    console.log(`Server is running on http://localhost:${PORT}`);
 });
