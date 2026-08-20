@@ -1,120 +1,290 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Next-Gen Digital Marketing & Tech Agency. SEO, Full-Stack Web Development, and Graphic Design.">
-    <title>Elevate - Next-Gen Agency</title>
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+    <title>Elevate | Next-Gen Agency</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@600;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Global Styles -->
     <link rel="stylesheet" href="/styles/main.css">
+    
     <!-- Spline 3D Viewer -->
-    <script type="module" src="https://unpkg.com/@splinetool/viewer@1.9.5/build/spline-viewer.js"></script>
+    <script type="module" src="https://unpkg.com/@splinetool/viewer@1.0.51/build/spline-viewer.js"></script>
+    
+    <style>
+        /* Hide Default Cursor for Desktop */
+        @media(pointer: fine) { body { cursor: none; } }
+
+        /* Custom Cursor */
+        #custom-cursor {
+            position: fixed; top: 0; left: 0; width: 12px; height: 12px;
+            background: var(--accent-primary); border-radius: 50%;
+            pointer-events: none; z-index: 10000;
+            transform: translate(-50%, -50%); transition: width 0.3s, height 0.3s, background 0.3s;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0; color: transparent; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;
+        }
+        #custom-cursor.hover-view {
+            width: 80px; height: 80px; background: rgba(255, 255, 255, 0.9); color: black; font-size: 0.8rem;
+        }
+
+        /* Hero Typography */
+        .hero-section { position: relative; height: 100vh; display: flex; flex-direction: column; justify-content: center; z-index: 10; padding: 0 5%; pointer-events: none;}
+        .hero-title { font-size: clamp(4rem, 10vw, 9rem); font-family: 'Outfit', sans-serif; font-weight: 900; line-height: 0.9; text-transform: uppercase; margin-bottom: 1rem; color: #fff;}
+        .hero-subtitle { font-size: clamp(1rem, 2vw, 1.5rem); font-weight: 400; color: var(--text-secondary); max-width: 600px; margin-bottom: 2rem;}
+        .spline-container { position: absolute; top: 0; right: 0; width: 100%; height: 100vh; z-index: 1; pointer-events: auto;}
+
+        /* Infinite Marquee */
+        .marquee-container { width: 100%; overflow: hidden; white-space: nowrap; padding: 3rem 0; border-top: 1px solid rgba(255,255,255,0.1); border-bottom: 1px solid rgba(255,255,255,0.1); background: var(--bg-secondary); position: relative; z-index: 10;}
+        .marquee-text { display: inline-block; font-size: 4rem; font-family: 'Outfit'; font-weight: 700; color: transparent; -webkit-text-stroke: 1px rgba(255,255,255,0.3); animation: marquee 20s linear infinite; padding-left: 2rem;}
+        .marquee-text span { color: var(--text-primary); -webkit-text-stroke: 0; }
+        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+        /* Showreel Section */
+        .showreel-section { padding: 5rem 5%; background: var(--bg-primary); position: relative; z-index: 10; }
+        .showreel-container { width: 100%; height: 70vh; border-radius: 20px; overflow: hidden; position: relative; cursor: pointer; }
+        .showreel-container video { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.7) grayscale(0.5); transition: filter 0.5s; }
+        .showreel-container:hover video { filter: brightness(1) grayscale(0); }
+        .showreel-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: 'Outfit'; font-size: 3rem; font-weight: 900; pointer-events: none;}
+
+        /* Bento Grid Portfolio */
+        .portfolio-section { padding: 5rem 5%; background: var(--bg-secondary); position: relative; z-index: 10;}
+        .section-header { font-size: 4rem; font-family: 'Outfit'; font-weight: 900; margin-bottom: 3rem;}
+        .bento-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 2rem; }
+        
+        .bento-item { border-radius: 24px; overflow: hidden; position: relative; border: 1px solid var(--glass-border); cursor: pointer; }
+        .bento-item img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .bento-item:hover img { transform: scale(1.05); }
+        .bento-meta { position: absolute; bottom: 0; left: 0; width: 100%; padding: 2rem; background: linear-gradient(transparent, rgba(0,0,0,0.9)); color: white; transform: translateY(20px); opacity: 0; transition: all 0.3s; }
+        .bento-item:hover .bento-meta { transform: translateY(0); opacity: 1; }
+        .bento-meta h3 { font-family: 'Outfit'; font-size: 1.5rem; margin-bottom: 0.2rem;}
+        .bento-meta p { color: var(--text-secondary); font-size: 0.9rem;}
+
+        .item-1 { grid-column: span 12; height: 60vh; }
+        .item-2 { grid-column: span 7; height: 50vh; }
+        .item-3 { grid-column: span 5; height: 50vh; }
+
+        @media(max-width: 768px) {
+            .item-1, .item-2, .item-3 { grid-column: span 12; height: 40vh; }
+            .hero-title { font-size: 3.5rem; }
+            .marquee-text { font-size: 2.5rem; }
+        }
+    </style>
 </head>
 <body>
-    <!-- Interactive Background Particles -->
-    <div id="tsparticles"></div>
+    <!-- Custom Cursor -->
+    <div id="custom-cursor"></div>
 
-    <nav class="navbar glass-panel">
+    <!-- Navigation -->
+    <nav class="navbar glass-panel" style="z-index: 100;">
         <div class="logo">Elevate<span>.</span></div>
-        <div class="menu-toggle" id="mobile-menu">
-            <span class="bar"></span>
-            <span class="bar"></span>
-            <span class="bar"></span>
-        </div>
+        <div class="menu-toggle" id="mobile-menu"><span></span><span></span><span></span></div>
         <ul class="nav-links">
-            <li><a href="#services">Services</a></li>
-            <li><a href="#about">About</a></li>
-            <li><a href="/login.html">Login</a></li>
-            <li><a href="/quote.html" class="btn btn-primary glass-btn">Get a Quote</a></li>
+            <li><a href="#" class="cursor-link">Services</a></li>
+            <li><a href="#" class="cursor-link">Work</a></li>
+            <li><a href="/quote.html" class="cursor-link">Get a Quote</a></li>
+            <li><a href="/login.html" class="btn btn-primary glass-btn cursor-link" style="padding: 0.5rem 1.5rem; font-size:0.9rem;">Client Portal</a></li>
         </ul>
     </nav>
 
-    <header class="hero">
-        <div class="hero-content">
-            <h1 class="gradient-text scroll-animate">Futuristic Digital Experiences</h1>
-            <p class="scroll-animate delay-1">We engineer premium web applications, data-driven SEO strategies, and vibrant graphic designs to propel your brand into the future.</p>
-            <div class="hero-actions scroll-animate delay-2">
-                <a href="#services" class="btn btn-primary glass-btn">Explore Services</a>
-                <a href="/quote.html" class="btn btn-secondary glass-btn">Build a Quote</a>
-            </div>
-        </div>
-        <div class="hero-graphics scroll-animate delay-3">
-            <!-- Spline 3D Interactive Object -->
-            <div class="spline-container">
-                <spline-viewer url="https://prod.spline.design/6Wq1Q7YGyM-iab9I/scene.splinecode"></spline-viewer>
-            </div>
-        </div>
-    </header>
+    <!-- Background Particles -->
+    <div id="tsparticles"></div>
 
-    <section id="services" class="services">
-        <h2 class="section-title scroll-animate gradient-text">Core Services</h2>
-        <!-- Modular Grid Architecture -->
-        <div class="services-grid">
-            <div class="glass-card service-card tilt-card scroll-animate delay-1" data-tilt data-tilt-glare data-tilt-max-glare="0.4" data-tilt-max="10">
-                <div class="icon-wrapper">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="url(#grad1)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path><path d="M2 2l7.586 7.586"></path><circle cx="11" cy="11" r="2"></circle>
-                        <defs><linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#6366f1;stop-opacity:1" /><stop offset="100%" style="stop-color:#ec4899;stop-opacity:1" /></linearGradient></defs>
-                    </svg>
-                </div>
-                <h3>Graphic Design</h3>
-                <p>Vibrant creative visuals, branding, and immersive UI/UX capabilities crafted for a premium aesthetic.</p>
-            </div>
-            
-            <div class="glass-card service-card tilt-card scroll-animate delay-2" data-tilt data-tilt-glare data-tilt-max-glare="0.4" data-tilt-max="10">
-                <div class="icon-wrapper">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="url(#grad2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-                         <defs><linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#10b981;stop-opacity:1" /><stop offset="100%" style="stop-color:#3b82f6;stop-opacity:1" /></linearGradient></defs>
-                    </svg>
-                </div>
-                <h3>SEO Management</h3>
-                <p>Data-driven ranking, deep analytics, and strategic search optimization to dominate digital visibility.</p>
-            </div>
+    <!-- 3D Spline Background -->
+    <div class="spline-container">
+        <spline-viewer url="https://prod.spline.design/iW5aK0aT8x1A-6G3/scene.splinecode"></spline-viewer>
+    </div>
 
-            <div class="glass-card service-card tilt-card scroll-animate delay-3" data-tilt data-tilt-glare data-tilt-max-glare="0.4" data-tilt-max="10">
-                <div class="icon-wrapper">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="url(#grad3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline>
-                        <defs><linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#f59e0b;stop-opacity:1" /><stop offset="100%" style="stop-color:#ef4444;stop-opacity:1" /></linearGradient></defs>
-                    </svg>
-                </div>
-                <h3>Full-Stack Web Dev</h3>
-                <p>Robust frontend interfaces paired with powerful, secure backend engineering for scalable applications.</p>
-            </div>
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <h1 class="hero-title">Digital<br>Creative<br><span style="color:var(--accent-primary)">Agency.</span></h1>
+        <p class="hero-subtitle">We craft immersive digital experiences, bleeding-edge web applications, and bold brand identities for companies that refuse to blend in.</p>
+        <div style="pointer-events: auto;">
+            <a href="/quote.html" class="btn btn-primary cursor-link">Start a Project</a>
         </div>
     </section>
-    
-    <footer id="contact" class="footer glass-panel">
-        <h2 class="gradient-text scroll-animate">Ready to Build the Future?</h2>
-        <p class="scroll-animate delay-1">Let's engineer your next digital breakthrough.</p>
-        <button class="btn btn-primary glass-btn scroll-animate delay-2">Initiate Contact</button>
-        <div class="copyright">Â© 2026 Elevate Next-Gen Tech Agency. All rights reserved.</div>
+
+    <!-- Infinite Marquee -->
+    <div class="marquee-container">
+        <div class="marquee-text">
+            UI/UX DESIGN • <span>WEB DEVELOPMENT</span> • 3D MOTION • <span>BRAND STRATEGY</span> • SEO OPTIMIZATION • UI/UX DESIGN • <span>WEB DEVELOPMENT</span> • 3D MOTION • <span>BRAND STRATEGY</span> • SEO OPTIMIZATION •
+        </div>
+    </div>
+
+    <!-- Showreel Video -->
+    <section class="showreel-section">
+        <div class="showreel-container cursor-view" data-cursor-text="PLAY">
+            <!-- Placeholder Abstract Video -->
+            <video autoplay loop muted playsinline>
+                <source src="https://cdn.coverr.co/videos/coverr-abstract-neon-lines-5321/1080p.mp4" type="video/mp4">
+            </video>
+            <div class="showreel-overlay gradient-text">SHOWREEL 2026</div>
+        </div>
+    </section>
+
+    <!-- Lumina Diagonal Gallery -->
+    <div class="lumina-gallery-wrapper" id="lumina-wrapper">
+        <div class="lumina-sticky-container">
+            <h2 class="section-header gradient-text" style="position:absolute; top: 5%; left: 5%; z-index: 20; font-size: 5rem;">Selected Work</h2>
+            
+            <div class="lumina-canvas" id="lumina-canvas">
+                
+                <a class="lumina-project-card cursor-view" data-cursor-text="VIEW" style="left: 20vw; top: 15vh;" href="/projects/ecommerce">
+                    <img src="/assets/ecommerce_store_1787255838735.jpg" alt="E-Commerce Fashion Store">
+                    <div class="lumina-meta">
+                        <span>E-Commerce / UI UX</span>
+                        <h3>ARCHETYPE Fashion</h3>
+                    </div>
+                </a>
+                
+                <a class="lumina-project-card cursor-view" data-cursor-text="VIEW" style="left: 80vw; top: 40vh;" href="/projects/saas">
+                    <img src="/assets/saas_dashboard_1787255806254.jpg" alt="SaaS Dashboard">
+                    <div class="lumina-meta">
+                        <span>Dashboard / Dev</span>
+                        <h3>Analytica SaaS</h3>
+                    </div>
+                </a>
+
+                <a class="lumina-project-card cursor-view" data-cursor-text="VIEW" style="left: 140vw; top: 65vh;" href="/projects/fintech">
+                    <img src="/assets/fintech_app_1787255826450.jpg" alt="Fintech App">
+                    <div class="lumina-meta">
+                        <span>Mobile App / Fintech</span>
+                        <h3>Aethelred Banking</h3>
+                    </div>
+                </a>
+                
+                <!-- More cards could be added here to extend the canvas -->
+                <a class="lumina-project-card cursor-view" data-cursor-text="VIEW" style="left: 200vw; top: 90vh;" href="/projects/coming-soon">
+                    <img src="https://images.unsplash.com/photo-1618761714954-0b8cd0026356?auto=format&fit=crop&w=800&q=80" alt="Future Project">
+                    <div class="lumina-meta">
+                        <span>3D Motion / Branding</span>
+                        <h3>Future Concept</h3>
+                    </div>
+                </a>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Section -->
+    <footer class="site-footer">
+        <div class="footer-top">
+            <div class="footer-cta">
+                <h2>Got a project?<br>Let's talk.</h2>
+                <a href="/quote.html" class="btn btn-primary cursor-view" data-cursor-text="LET'S GO">Start Your Project</a>
+            </div>
+            
+            <div class="footer-links-grid">
+                <div class="footer-column">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="#" class="cursor-link">About Us</a></li>
+                        <li><a href="#" class="cursor-link">Services</a></li>
+                        <li><a href="#" class="cursor-link">Portfolio</a></li>
+                        <li><a href="#" class="cursor-link">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Legal & Trust</h4>
+                    <ul>
+                        <li><a href="#" class="cursor-link">Privacy Policy</a></li>
+                        <li><a href="#" class="cursor-link">Terms of Service</a></li>
+                        <li><a href="#" class="cursor-link">Cookie Policy</a></li>
+                        <li><a href="#" class="cursor-link">Legal Disclosure</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <div class="footer-trust">
+                <div class="trust-badge">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-secondary)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                    256-Bit Secure
+                </div>
+                <div class="trust-badge">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v8"></path><path d="M8 12h8"></path></svg>
+                    ISO Certified
+                </div>
+            </div>
+            
+            <p>&copy; 2026 Elevate Digital Agency. All rights reserved.</p>
+        </div>
     </footer>
 
-    <!-- tsParticles library -->
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/tsparticles-engine@2.12.0/tsparticles.engine.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tsparticles-basic@2.12.0/tsparticles.basic.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/tsparticles-interaction-particles-links@2.12.0/tsparticles.interaction.particles.links.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/tsparticles-move-base@2.12.0/tsparticles.move.base.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/tsparticles-shape-circle@2.12.0/tsparticles.shape.circle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/tsparticles-updater-color@2.12.0/tsparticles.updater.color.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/tsparticles-updater-opacity@2.12.0/tsparticles.updater.opacity.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/tsparticles-updater-size@2.12.0/tsparticles.updater.size.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
-
-    <!-- Vanilla Tilt JS for 3D gyroscope/hover effects -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
+    <script type="text/javascript" src="/scripts/vanilla-tilt.min.js"></script>
     
-    <!-- Custom Scripts -->
-    <script src="/scripts/main.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.19/bundled/lenis.min.js"></script>
-<script>
-    const lenis = new Lenis({ duration: 1.2, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)) });
-    function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
-    requestAnimationFrame(raf);
-</script>
-<script src="/scripts/chatbot.js"></script>
+    <!-- Lenis Smooth Scroll -->
+    <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.19/bundled/lenis.min.js"></script>
+    
+    <script>
+        // Particles
+        tsParticles.load("tsparticles", { fpsLimit: 60, particles: { color: { value: ["#14B8A6", "#D4AF37"] }, links: { enable: false }, move: { enable: true, speed: 0.5 }, number: { value: 30 }, opacity: { value: 0.3 }, size: { value: { min: 1, max: 3 } } }});
+
+        // Mobile Menu Toggle
+        document.getElementById('mobile-menu').addEventListener('click', function() {
+            this.classList.toggle('active');
+            document.querySelector('.nav-links').classList.toggle('active');
+        });
+
+        // Vanilla Tilt for Bento
+        VanillaTilt.init(document.querySelectorAll(".tilt-card"), { max: 5, speed: 400, glare: true, "max-glare": 0.2 });
+
+        // Lenis Setup
+        const lenis = new Lenis({ duration: 1.2, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)) });
+        function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
+        requestAnimationFrame(raf);
+
+        // Custom Cursor Logic
+        const cursor = document.getElementById('custom-cursor');
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+        });
+
+        document.querySelectorAll('.cursor-link').forEach(link => {
+            link.addEventListener('mouseenter', () => cursor.style.transform = 'translate(-50%, -50%) scale(1.5)');
+            link.addEventListener('mouseleave', () => cursor.style.transform = 'translate(-50%, -50%) scale(1)');
+        });
+
+        document.querySelectorAll('.cursor-view').forEach(elem => {
+            elem.addEventListener('mouseenter', () => {
+                cursor.classList.add('hover-view');
+                cursor.innerText = elem.dataset.cursorText || 'VIEW';
+            });
+            elem.addEventListener('mouseleave', () => {
+                cursor.classList.remove('hover-view');
+                cursor.innerText = '';
+            });
+        });
+
+        // Lumina Scroll Animation
+        const wrapper = document.getElementById('lumina-wrapper');
+        const canvas = document.getElementById('lumina-canvas');
+        
+        window.addEventListener('scroll', () => {
+            if(!wrapper || !canvas) return;
+            const rect = wrapper.getBoundingClientRect();
+            // If the wrapper is in view and we are scrolling through it
+            if(rect.top <= 0 && rect.bottom >= window.innerHeight) {
+                // Calculate progress from 0 to 1
+                const scrollableDistance = rect.height - window.innerHeight;
+                const progress = Math.abs(rect.top) / scrollableDistance;
+                
+                // Translate the canvas based on progress
+                // Max translate X depends on canvas width vs window width (e.g. -250vw)
+                // Max translate Y (e.g. -100vh to create the diagonal effect)
+                canvas.style.transform = `translate3d(${-progress * 250}vw, ${-progress * 100}vh, 0)`;
+            }
+        });
+    </script>
+    <script src="/scripts/chatbot.js"></script>
 </body>
 </html>
-
