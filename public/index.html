@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Next-Gen Digital Marketing & Tech Agency. SEO, Full-Stack Web Development, and Graphic Design.">
+    <title>Elevate - Next-Gen Agency</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles/main.css">
+</head>
+<body>
+    <!-- Interactive Background Particles -->
+    <div id="tsparticles"></div>
+
+    <nav class="navbar glass-panel">
+        <div class="logo">Elevate<span>.</span></div>
+        <ul class="nav-links">
+            <li><a href="#services">Services</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#contact" class="btn btn-primary">Get Started</a></li>
+        </ul>
+    </nav>
+
+    <header class="hero">
+        <div class="hero-content">
+            <h1 class="gradient-text scroll-animate">Futuristic Digital Experiences</h1>
+            <p class="scroll-animate delay-1">We engineer premium web applications, data-driven SEO strategies, and vibrant graphic designs to propel your brand into the future.</p>
+            <div class="hero-actions scroll-animate delay-2">
+                <a href="#services" class="btn btn-primary glass-btn">Explore Services</a>
+            </div>
+        </div>
+        <div class="hero-graphics scroll-animate delay-3">
+            <div class="glass-card main-card tilt-card" data-tilt data-tilt-glare data-tilt-max-glare="0.5" data-tilt-max="15">
+                <h3>SEO Analytics</h3>
+                <div class="chart-bar"><div class="fill" style="width: 85%;"></div></div>
+                <div class="chart-bar"><div class="fill" style="width: 65%;"></div></div>
+                <div class="chart-bar"><div class="fill" style="width: 95%;"></div></div>
+            </div>
+        </div>
+    </header>
+
+    <section id="services" class="services">
+        <h2 class="section-title scroll-animate gradient-text">Core Services</h2>
+        <!-- Modular Grid Architecture -->
+        <div class="services-grid">
+            <div class="glass-card service-card tilt-card scroll-animate delay-1" data-tilt data-tilt-glare data-tilt-max-glare="0.4" data-tilt-max="10">
+                <div class="icon-wrapper">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="url(#grad1)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path><path d="M2 2l7.586 7.586"></path><circle cx="11" cy="11" r="2"></circle>
+                        <defs><linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#6366f1;stop-opacity:1" /><stop offset="100%" style="stop-color:#ec4899;stop-opacity:1" /></linearGradient></defs>
+                    </svg>
+                </div>
+                <h3>Graphic Design</h3>
+                <p>Vibrant creative visuals, branding, and immersive UI/UX capabilities crafted for a premium aesthetic.</p>
+            </div>
+            
+            <div class="glass-card service-card tilt-card scroll-animate delay-2" data-tilt data-tilt-glare data-tilt-max-glare="0.4" data-tilt-max="10">
+                <div class="icon-wrapper">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="url(#grad2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                         <defs><linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#10b981;stop-opacity:1" /><stop offset="100%" style="stop-color:#3b82f6;stop-opacity:1" /></linearGradient></defs>
+                    </svg>
+                </div>
+                <h3>SEO Management</h3>
+                <p>Data-driven ranking, deep analytics, and strategic search optimization to dominate digital visibility.</p>
+            </div>
+
+            <div class="glass-card service-card tilt-card scroll-animate delay-3" data-tilt data-tilt-glare data-tilt-max-glare="0.4" data-tilt-max="10">
+                <div class="icon-wrapper">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="url(#grad3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline>
+                        <defs><linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#f59e0b;stop-opacity:1" /><stop offset="100%" style="stop-color:#ef4444;stop-opacity:1" /></linearGradient></defs>
+                    </svg>
+                </div>
+                <h3>Full-Stack Web Dev</h3>
+                <p>Robust frontend interfaces paired with powerful, secure backend engineering for scalable applications.</p>
+            </div>
+        </div>
+    </section>
+    
+    <footer id="contact" class="footer glass-panel">
+        <h2 class="gradient-text scroll-animate">Ready to Build the Future?</h2>
+        <p class="scroll-animate delay-1">Let's engineer your next digital breakthrough.</p>
+        <button class="btn btn-primary glass-btn scroll-animate delay-2">Initiate Contact</button>
+        <div class="copyright">© 2026 Elevate Next-Gen Tech Agency. All rights reserved.</div>
+    </footer>
+
+    <!-- tsParticles library -->
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles-engine@2.12.0/tsparticles.engine.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles-basic@2.12.0/tsparticles.basic.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles-interaction-particles-links@2.12.0/tsparticles.interaction.particles.links.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles-move-base@2.12.0/tsparticles.move.base.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles-shape-circle@2.12.0/tsparticles.shape.circle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles-updater-color@2.12.0/tsparticles.updater.color.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles-updater-opacity@2.12.0/tsparticles.updater.opacity.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles-updater-size@2.12.0/tsparticles.updater.size.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
+
+    <!-- Vanilla Tilt JS for 3D gyroscope/hover effects -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
+    
+    <!-- Custom Scripts -->
+    <script src="/scripts/main.js"></script>
+</body>
+</html>
