@@ -1,0 +1,51 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Client Dashboard - Elevate</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles/main.css">
+    <style>
+        .portal-container { padding: 8rem 5% 4rem; max-width: 800px; margin: 0 auto; z-index: 10; position: relative; text-align: center;}
+    </style>
+</head>
+<body>
+    <div id="tsparticles"></div>
+    <nav class="navbar glass-panel">
+        <div class="logo">Elevate<span>.</span></div>
+        <ul class="nav-links">
+            <li><a href="/quote.html" class="btn btn-primary glass-btn">New Quote</a></li>
+            <li><a href="#" id="logoutBtn" style="color:#ef4444">Logout</a></li>
+        </ul>
+    </nav>
+
+    <div class="portal-container">
+        <h2 class="gradient-text">Welcome to your Dashboard</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 2rem;">Manage your active projects and quotes here.</p>
+        <div class="glass-card">
+            <h3>No Active Projects</h3>
+            <p style="margin-top:1rem; color:var(--text-secondary)">You currently do not have any active projects underway. Request a new quote to get started.</p>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles-engine@2.12.0/tsparticles.engine.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles-basic@2.12.0/tsparticles.basic.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
+    <script>
+        tsParticles.load("tsparticles", { fpsLimit: 30, particles: { color: { value: ["#ec4899"] }, links: { enable: true, opacity: 0.1 }, move: { enable: true, speed: 0.2 }, number: { value: 20 }, opacity: { value: 0.1 } } });
+
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            await fetch('/api/logout', { method: 'POST' });
+            window.location.href = '/';
+        });
+    </script>
+<script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.19/bundled/lenis.min.js"></script>
+<script>
+    const lenis = new Lenis({ duration: 1.2, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)) });
+    function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
+    requestAnimationFrame(raf);
+</script>
+<script src="/scripts/chatbot.js"></script>
+</body>
+</html>
+

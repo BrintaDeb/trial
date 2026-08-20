@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -10,6 +10,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/styles/main.css">
+    <!-- Spline 3D Viewer -->
+    <script type="module" src="https://unpkg.com/@splinetool/viewer@1.9.5/build/spline-viewer.js"></script>
 </head>
 <body>
     <!-- Interactive Background Particles -->
@@ -17,10 +19,16 @@
 
     <nav class="navbar glass-panel">
         <div class="logo">Elevate<span>.</span></div>
+        <div class="menu-toggle" id="mobile-menu">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </div>
         <ul class="nav-links">
             <li><a href="#services">Services</a></li>
             <li><a href="#about">About</a></li>
-            <li><a href="#contact" class="btn btn-primary">Get Started</a></li>
+            <li><a href="/login.html">Login</a></li>
+            <li><a href="/quote.html" class="btn btn-primary glass-btn">Get a Quote</a></li>
         </ul>
     </nav>
 
@@ -30,14 +38,13 @@
             <p class="scroll-animate delay-1">We engineer premium web applications, data-driven SEO strategies, and vibrant graphic designs to propel your brand into the future.</p>
             <div class="hero-actions scroll-animate delay-2">
                 <a href="#services" class="btn btn-primary glass-btn">Explore Services</a>
+                <a href="/quote.html" class="btn btn-secondary glass-btn">Build a Quote</a>
             </div>
         </div>
         <div class="hero-graphics scroll-animate delay-3">
-            <div class="glass-card main-card tilt-card" data-tilt data-tilt-glare data-tilt-max-glare="0.5" data-tilt-max="15">
-                <h3>SEO Analytics</h3>
-                <div class="chart-bar"><div class="fill" style="width: 85%;"></div></div>
-                <div class="chart-bar"><div class="fill" style="width: 65%;"></div></div>
-                <div class="chart-bar"><div class="fill" style="width: 95%;"></div></div>
+            <!-- Spline 3D Interactive Object -->
+            <div class="spline-container">
+                <spline-viewer url="https://prod.spline.design/6Wq1Q7YGyM-iab9I/scene.splinecode"></spline-viewer>
             </div>
         </div>
     </header>
@@ -82,7 +89,7 @@
         <h2 class="gradient-text scroll-animate">Ready to Build the Future?</h2>
         <p class="scroll-animate delay-1">Let's engineer your next digital breakthrough.</p>
         <button class="btn btn-primary glass-btn scroll-animate delay-2">Initiate Contact</button>
-        <div class="copyright">© 2026 Elevate Next-Gen Tech Agency. All rights reserved.</div>
+        <div class="copyright">Â© 2026 Elevate Next-Gen Tech Agency. All rights reserved.</div>
     </footer>
 
     <!-- tsParticles library -->
@@ -101,5 +108,13 @@
     
     <!-- Custom Scripts -->
     <script src="/scripts/main.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.19/bundled/lenis.min.js"></script>
+<script>
+    const lenis = new Lenis({ duration: 1.2, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)) });
+    function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
+    requestAnimationFrame(raf);
+</script>
+<script src="/scripts/chatbot.js"></script>
 </body>
 </html>
+

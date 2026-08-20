@@ -1,0 +1,342 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Get a Quote - Elevate</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles/main.css">
+    <style>
+        .quote-container { padding: 8rem 5% 4rem; display: flex; justify-content: center; position: relative; z-index: 10; }
+        .quote-card { width: 100%; max-width: 1000px; padding: 3rem 2rem; }
+        
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; color: var(--text-secondary); font-weight: 500; }
+        .form-group input { width: 100%; padding: 1rem; border-radius: 12px; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--glass-border); color: var(--text-primary); font-family: inherit; outline: none; transition: border-color 0.3s; }
+        .form-group input:focus { border-color: var(--accent-primary); }
+        
+        .service-category { margin-top: 3rem; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--glass-highlight); }
+        .service-category h3 { font-size: 1.8rem; color: var(--text-primary); }
+        
+        .packages-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        
+        /* Custom Radio Card Styling (Fiverr Style) */
+        .package-label { position: relative; cursor: pointer; }
+        .package-label input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; }
+        .package-box { padding: 1.5rem; background: rgba(255,255,255,0.02); border-radius: 16px; border: 2px solid var(--glass-border); transition: all 0.3s ease; height: 100%; display: flex; flex-direction: column; }
+        .package-box .tier-badge { display: inline-block; padding: 0.2rem 0.8rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem; }
+        
+        .tier-basic { background: rgba(99, 102, 241, 0.2); color: #818cf8; }
+        .tier-standard { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+        .tier-premium { background: rgba(236, 72, 153, 0.2); color: #f472b6; }
+        
+        .package-box h4 { font-size: 1.25rem; margin-bottom: 0.5rem; color: var(--text-primary); }
+        .package-box p { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1.5rem; flex-grow: 1; }
+        .package-box .price { font-size: 1.8rem; font-weight: 700; color: var(--text-primary); font-family: 'Outfit'; }
+        
+        .package-label input[type="radio"]:checked + .package-box { border-color: var(--accent-primary); background: rgba(255, 255, 255, 0.05); box-shadow: 0 0 20px rgba(99, 102, 241, 0.2); }
+        .package-label:hover .package-box { border-color: var(--accent-secondary); transform: translateY(-5px); }
+
+        .total-box { margin-top: 3rem; padding-top: 2rem; border-top: 2px dashed var(--glass-highlight); display: flex; justify-content: space-between; align-items: center; font-size: 2rem; font-weight: 700; font-family: 'Outfit'; }
+        .btn { width: 100%; margin-top: 2rem; padding: 1.2rem; font-size: 1.2rem; }
+        .success-msg { display: none; color: #10b981; margin-top: 1.5rem; text-align: center; font-size: 1.2rem;}
+        
+        /* Form Grid for Billing */
+        .billing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        @media(max-width: 768px) { .billing-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div id="tsparticles"></div>
+    <nav class="navbar glass-panel">
+        <div class="logo">Elevate<span>.</span></div>
+        <ul class="nav-links"><li><a href="/">â† Home</a></li></ul>
+    </nav>
+    <div class="quote-container">
+        <div class="glass-card quote-card">
+            <h2 class="gradient-text" style="font-size:3rem; margin-bottom:0.5rem; text-align:center;">Configure Your Services</h2>
+            <p style="margin-bottom: 3rem; color: var(--text-secondary); text-align:center;">Select your tier for each service. All prices in INR.</p>
+            
+            <form id="quoteForm">
+                <h3 style="margin-bottom: 1.5rem; color: var(--accent-primary);">1. Billing Details</h3>
+                <div class="billing-grid">
+                    <div class="form-group">
+                        <label>Company Name / Full Name</label>
+                        <input type="text" id="companyName" required placeholder="Elevate Tech Ltd.">
+                    </div>
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" id="email" required placeholder="hello@company.com">
+                    </div>
+                </div>
+                <div class="billing-grid">
+                    <div class="form-group">
+                        <label>GST Number (Optional)</label>
+                        <input type="text" id="gstNumber" placeholder="22AAAAA0000A1Z5">
+                    </div>
+                    <div class="form-group">
+                        <label>Billing Address</label>
+                        <input type="text" id="address" required placeholder="123 Tech Park, Mumbai, 400001">
+                    </div>
+                </div>
+                
+                <h3 style="margin-top: 3rem; margin-bottom: 1.5rem; color: var(--accent-secondary);">2. Service Selection</h3>
+                
+                <!-- Web Development -->
+                <div class="service-category">
+                    <h3>Web Development</h3>
+                </div>
+                <div class="packages-grid">
+                    <label class="package-label">
+                        <input type="radio" name="webdev" value="0" data-price="0" data-name="None" checked>
+                        <div class="package-box" style="justify-content: center; align-items: center; min-height: 150px;">
+                            <h4 style="color:var(--text-secondary)">No Thanks</h4>
+                        </div>
+                    </label>
+                    <label class="package-label">
+                        <input type="radio" name="webdev" value="web_basic" data-price="15000" data-name="Web Dev - Basic">
+                        <div class="package-box">
+                            <span class="tier-badge tier-basic">Basic</span>
+                            <h4>Landing Page</h4>
+                            <p>Single page responsive site, perfect for portfolios or waitlists.</p>
+                            <div class="price">â‚¹15,000</div>
+                        </div>
+                    </label>
+                    <label class="package-label">
+                        <input type="radio" name="webdev" value="web_standard" data-price="45000" data-name="Web Dev - Standard">
+                        <div class="package-box">
+                            <span class="tier-badge tier-standard">Standard</span>
+                            <h4>E-Commerce Store</h4>
+                            <p>Full store setup with payment gateway integration.</p>
+                            <div class="price">â‚¹45,000</div>
+                        </div>
+                    </label>
+                    <label class="package-label">
+                        <input type="radio" name="webdev" value="web_premium" data-price="120000" data-name="Web Dev - Premium">
+                        <div class="package-box">
+                            <span class="tier-badge tier-premium">Premium</span>
+                            <h4>Custom Web App</h4>
+                            <p>Bespoke frontend/backend logic, auth, and database integration.</p>
+                            <div class="price">â‚¹1,20,000</div>
+                        </div>
+                    </label>
+                </div>
+
+                <!-- SEO Management -->
+                <div class="service-category">
+                    <h3>SEO Management</h3>
+                </div>
+                <div class="packages-grid">
+                    <label class="package-label">
+                        <input type="radio" name="seo" value="0" data-price="0" data-name="None" checked>
+                        <div class="package-box" style="justify-content: center; align-items: center; min-height: 150px;">
+                            <h4 style="color:var(--text-secondary)">No Thanks</h4>
+                        </div>
+                    </label>
+                    <label class="package-label">
+                        <input type="radio" name="seo" value="seo_basic" data-price="8000" data-name="SEO - Basic">
+                        <div class="package-box">
+                            <span class="tier-badge tier-basic">Basic</span>
+                            <h4>On-page Setup</h4>
+                            <p>Keyword research, meta tags, and basic site optimization.</p>
+                            <div class="price">â‚¹8,000</div>
+                        </div>
+                    </label>
+                    <label class="package-label">
+                        <input type="radio" name="seo" value="seo_standard" data-price="25000" data-name="SEO - Standard">
+                        <div class="package-box">
+                            <span class="tier-badge tier-standard">Standard</span>
+                            <h4>Monthly Growth</h4>
+                            <p>Backlink outreach, content strategy, and monthly reports.</p>
+                            <div class="price">â‚¹25,000</div>
+                        </div>
+                    </label>
+                    <label class="package-label">
+                        <input type="radio" name="seo" value="seo_premium" data-price="60000" data-name="SEO - Premium">
+                        <div class="package-box">
+                            <span class="tier-badge tier-premium">Premium</span>
+                            <h4>Enterprise SEO</h4>
+                            <p>Dominating high-competition keywords, technical audits, full PR.</p>
+                            <div class="price">â‚¹60,000</div>
+                        </div>
+                    </label>
+                </div>
+
+                <!-- Graphic Design -->
+                <div class="service-category">
+                    <h3>Graphic Design</h3>
+                </div>
+                <div class="packages-grid">
+                    <label class="package-label">
+                        <input type="radio" name="design" value="0" data-price="0" data-name="None" checked>
+                        <div class="package-box" style="justify-content: center; align-items: center; min-height: 150px;">
+                            <h4 style="color:var(--text-secondary)">No Thanks</h4>
+                        </div>
+                    </label>
+                    <label class="package-label">
+                        <input type="radio" name="design" value="design_basic" data-price="5000" data-name="Design - Basic">
+                        <div class="package-box">
+                            <span class="tier-badge tier-basic">Basic</span>
+                            <h4>Logo Design</h4>
+                            <p>3 custom logo concepts and final vector files.</p>
+                            <div class="price">â‚¹5,000</div>
+                        </div>
+                    </label>
+                    <label class="package-label">
+                        <input type="radio" name="design" value="design_standard" data-price="18000" data-name="Design - Standard">
+                        <div class="package-box">
+                            <span class="tier-badge tier-standard">Standard</span>
+                            <h4>Brand Identity</h4>
+                            <p>Logo, typography, color palette, and business cards.</p>
+                            <div class="price">â‚¹18,000</div>
+                        </div>
+                    </label>
+                    <label class="package-label">
+                        <input type="radio" name="design" value="design_premium" data-price="40000" data-name="Design - Premium">
+                        <div class="package-box">
+                            <span class="tier-badge tier-premium">Premium</span>
+                            <h4>Full UI/UX & Branding</h4>
+                            <p>Complete brand book, social media kit, and Figma UI design system.</p>
+                            <div class="price">â‚¹40,000</div>
+                        </div>
+                    </label>
+                </div>
+                
+                <!-- Hourly Tasks -->
+                <div class="service-category">
+                    <h3>Ad-Hoc Hourly Tasks</h3>
+                </div>
+                <div class="packages-grid">
+                    <div class="package-box" style="justify-content: center; min-height: 150px;">
+                        <h4 style="margin-bottom:1rem;">Need quick updates or consulting?</h4>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label>Number of Hours (â‚¹1,500/hr)</label>
+                            <input type="number" id="hourlyTasks" min="0" value="0" style="font-size:1.5rem; font-family:'Outfit'; text-align:center;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Discounts -->
+                <div class="service-category">
+                    <h3>Promotional Subscription</h3>
+                </div>
+                <label class="package-label" style="display:block; margin-bottom:1rem;">
+                    <input type="checkbox" id="newClientDiscount">
+                    <div class="package-box" style="flex-direction:row; align-items:center; justify-content:space-between; padding: 1rem 1.5rem;">
+                        <div style="flex-grow:1;">
+                            <h4 style="margin:0; color: #34d399;">New Registration Subscription (20% OFF)</h4>
+                            <p style="margin:0; color:var(--text-secondary); font-size:0.85rem;">Check this if this is your first time subscribing. Limit 1 per email.</p>
+                        </div>
+                        <div style="font-size:1.5rem; border:2px solid #34d399; border-radius:50%; width:30px; height:30px; display:flex; align-items:center; justify-content:center;" class="check-indicator"></div>
+                    </div>
+                </label>
+                
+                <div class="total-box">
+                    <span>Grand Total:</span>
+                    <span id="totalPrice" class="gradient-text">â‚¹0</span>
+                </div>
+                <button type="submit" class="btn btn-primary glass-btn">Generate Secure Quote</button>
+                <div id="errorMsg" class="success-msg" style="color:#ef4444; display:none;"></div>
+                <div id="successMsg" class="success-msg">Quote successfully logged! Our team will contact you with the invoice.</div>
+            </form>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles-engine@2.12.0/tsparticles.engine.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles-basic@2.12.0/tsparticles.basic.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
+    <script>
+        tsParticles.load("tsparticles", { fpsLimit: 30, particles: { color: { value: ["#6366f1", "#ec4899", "#10b981"] }, links: { color: "#ffffff", distance: 150, enable: true, opacity: 0.1 }, move: { enable: true, speed: 0.3 }, number: { value: 30 }, opacity: { value: 0.2 }, size: { value: { min: 1, max: 3 } } }});
+
+        // Dynamic Total Calculation
+        const radioGroups = ['webdev', 'seo', 'design'];
+        const totalDisplay = document.getElementById('totalPrice');
+        const hourlyInput = document.getElementById('hourlyTasks');
+        const discountToggle = document.getElementById('newClientDiscount');
+
+        function calculateTotal() {
+            let total = 0;
+            
+            // Tiered Packages
+            radioGroups.forEach(group => {
+                const checked = document.querySelector(`input[name="${group}"]:checked`);
+                if(checked) total += parseInt(checked.dataset.price);
+            });
+            
+            // Hourly Tasks
+            const hours = parseInt(hourlyInput.value) || 0;
+            total += (hours * 1500);
+
+            // Discount
+            if (discountToggle.checked) {
+                total = total * 0.80; // 20% off
+                document.querySelector('.check-indicator').innerHTML = 'âœ“';
+                document.querySelector('.check-indicator').style.color = '#34d399';
+            } else {
+                document.querySelector('.check-indicator').innerHTML = '';
+            }
+
+            totalDisplay.innerText = `â‚¹${total.toLocaleString('en-IN')}`;
+            return total;
+        }
+
+        document.querySelectorAll('input[type="radio"]').forEach(radio => radio.addEventListener('change', calculateTotal));
+        hourlyInput.addEventListener('input', calculateTotal);
+        discountToggle.addEventListener('change', calculateTotal);
+
+        document.getElementById('quoteForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const currentTotal = calculateTotal();
+            if (currentTotal === 0) return alert('Please select at least one service package or add hours.');
+            
+            document.getElementById('errorMsg').style.display = 'none';
+            document.getElementById('successMsg').style.display = 'none';
+            
+            const email = document.getElementById('email').value;
+            const companyName = document.getElementById('companyName').value;
+            const gstNumber = document.getElementById('gstNumber').value;
+            const address = document.getElementById('address').value;
+            const hours = parseInt(hourlyInput.value) || 0;
+            const applyDiscount = discountToggle.checked;
+            
+            const selections = [];
+            radioGroups.forEach(group => {
+                const checked = document.querySelector(`input[name="${group}"]:checked`);
+                if(checked && checked.value !== "0") {
+                    selections.push({ name: checked.dataset.name, price: parseInt(checked.dataset.price) });
+                }
+            });
+            
+            try {
+                const res = await fetch('/api/quotes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        email, companyName, gstNumber, address, selections, total: currentTotal, hours, applyDiscount 
+                    })
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    document.getElementById('successMsg').style.display = 'block';
+                    const btn = document.querySelector('.btn');
+                    btn.disabled = true;
+                    btn.innerText = "Quote Generated Successfully";
+                } else {
+                    const errorBox = document.getElementById('errorMsg');
+                    errorBox.innerText = data.message;
+                    errorBox.style.display = 'block';
+                }
+            } catch (err) { console.error(err); }
+        });
+    </script>
+<script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.19/bundled/lenis.min.js"></script>
+<script>
+    const lenis = new Lenis({ duration: 1.2, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)) });
+    function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
+    requestAnimationFrame(raf);
+</script>
+<script src="/scripts/chatbot.js"></script>
+</body>
+</html>
+

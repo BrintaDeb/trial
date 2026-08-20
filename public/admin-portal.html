@@ -1,0 +1,160 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard - Elevate</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles/main.css">
+    <style>
+        .portal-container { padding: 8rem 5% 4rem; max-width: 1200px; margin: 0 auto; z-index: 10; position: relative;}
+        .quote-item { background: rgba(255,255,255,0.05); padding: 2rem; border-radius: 12px; border: 1px solid var(--glass-border); margin-bottom: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
+        .quote-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--glass-highlight); padding-bottom: 1rem; }
+        .quote-meta h4 { margin-bottom: 0.5rem; font-size: 1.4rem; color: var(--accent-primary); }
+        .quote-meta p { color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 0.3rem; }
+        .quote-price { font-size: 2rem; font-weight: bold; color: var(--accent-secondary); font-family: 'Outfit'; text-align: right; }
+        
+        .quote-services { background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 8px; }
+        .quote-services ul { list-style: none; margin-top: 0.5rem; }
+        .quote-services li { display: flex; justify-content: space-between; font-size: 0.95rem; padding: 0.4rem 0; border-bottom: 1px dashed rgba(255,255,255,0.1); }
+        .quote-services li:last-child { border-bottom: none; }
+        
+        .timestamp { font-size: 0.85rem; color: #10b981; font-weight: 600; margin-top: 0.5rem;}
+    </style>
+</head>
+<body>
+    <div id="tsparticles"></div>
+    <nav class="navbar glass-panel">
+        <div class="logo">Elevate<span>.</span></div>
+        <ul class="nav-links">
+            <li><span>Admin Portal</span></li>
+            <li><a href="#" id="logoutBtn" style="color:#ef4444">Logout</a></li>
+        </ul>
+    </nav>
+
+    <div class="portal-container">
+        <h2 class="gradient-text">Agency Dashboard</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 2rem;">Manage leads and train your offline AI assistant.</p>
+        
+        <!-- AI Training Section -->
+        <div style="background: rgba(255,255,255,0.02); border:1px solid var(--glass-highlight); padding:2rem; border-radius:12px; margin-bottom:3rem;">
+            <h3 style="color:var(--accent-primary); margin-bottom:1rem;">Train Offline AI Chatbot</h3>
+            <p style="color:var(--text-secondary); margin-bottom:1rem; font-size:0.9rem;">Add facts to the AI knowledge base. It will use these to answer user questions when you are away.</p>
+            <div style="display:flex; gap:1rem; margin-bottom: 1.5rem;">
+                <input type="text" id="aiFactInput" placeholder="e.g. We specialize in Next.js and charge minimum â‚¹15,000 for web design." style="flex-grow:1; padding:1rem; border-radius:8px; border:1px solid var(--glass-border); background:rgba(0,0,0,0.3); color:white; outline:none;">
+                <button id="trainAiBtn" class="btn btn-primary glass-btn">Add Fact</button>
+            </div>
+            <h4>Current Knowledge Base:</h4>
+            <ul id="kbList" style="list-style:disc; margin-left:1.5rem; margin-top:1rem; color:var(--text-secondary); font-size:0.9rem; display:flex; flex-direction:column; gap:0.5rem;">
+                <li>Loading facts...</li>
+            </ul>
+        </div>
+
+        <h2 class="gradient-text" style="font-size:1.8rem; margin-bottom:1rem;">Incoming Leads & Quotes</h2>
+        <div id="quotesList">Loading quotes...</div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles-engine@2.12.0/tsparticles.engine.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles-basic@2.12.0/tsparticles.basic.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
+    <script>
+        tsParticles.load("tsparticles", { fpsLimit: 30, particles: { color: { value: ["#6366f1"] }, links: { enable: true, opacity: 0.1 }, move: { enable: true, speed: 0.2 }, number: { value: 20 }, opacity: { value: 0.1 } } });
+
+        async function fetchQuotes() {
+            try {
+                const res = await fetch('/api/quotes');
+                const data = await res.json();
+                
+                if (res.status === 403 || res.status === 401) {
+                    window.location.href = '/login.html';
+                    return;
+                }
+                
+                const list = document.getElementById('quotesList');
+                if (data.quotes.length === 0) {
+                    list.innerHTML = "<p>No pending quote requests.</p>";
+                    return;
+                }
+
+                list.innerHTML = data.quotes.map(q => {
+                    const servicesHtml = q.selections ? q.selections.map(s => `<li><span>${s.name}</span> <span>â‚¹${s.price.toLocaleString('en-IN')}</span></li>`).join('') : '<li>Legacy Quote Format</li>';
+                    const hourlyHtml = q.hours ? `<li><span>Ad-Hoc Hourly Tasks (${q.hours} hrs)</span> <span>â‚¹${(q.hours * 1500).toLocaleString('en-IN')}</span></li>` : '';
+                    const discountHtml = q.applyDiscount ? `<div style="margin-top:0.5rem; color:#10b981; font-weight:bold;">ðŸŽ‰ 20% New Client Discount Applied</div>` : '';
+
+                    return `
+                    <div class="quote-item">
+                        <div class="quote-header">
+                            <div class="quote-meta">
+                                <h4>${q.companyName || 'N/A'}</h4>
+                                <p><strong>Email:</strong> ${q.email}</p>
+                                <p><strong>Address:</strong> ${q.address || 'N/A'}</p>
+                                <p><strong>GST No:</strong> ${q.gstNumber || 'N/A'}</p>
+                            </div>
+                            <div class="quote-price">
+                                â‚¹${q.total.toLocaleString('en-IN')}
+                                <div class="timestamp">ðŸ•’ ${q.istTimestamp || 'No Timestamp'}</div>
+                            </div>
+                        </div>
+                        <div class="quote-services">
+                            <strong>Selected Packages:</strong>
+                            <ul>
+                                ${servicesHtml}
+                                ${hourlyHtml}
+                            </ul>
+                            ${discountHtml}
+                        </div>
+                    </div>
+                `}).reverse().join('');
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            await fetch('/api/logout', { method: 'POST' });
+            window.location.href = '/';
+        });
+
+        async function fetchKB() {
+            try {
+                const res = await fetch('/api/knowledge-base');
+                const data = await res.json();
+                const list = document.getElementById('kbList');
+                if (data.knowledgeBase.length === 0) {
+                    list.innerHTML = "<li>No facts trained yet.</li>";
+                } else {
+                    list.innerHTML = data.knowledgeBase.map(f => `<li>${f.original}</li>`).join('');
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        document.getElementById('trainAiBtn').addEventListener('click', async () => {
+            const input = document.getElementById('aiFactInput');
+            const fact = input.value.trim();
+            if(!fact) return;
+            
+            try {
+                const res = await fetch('/api/train-ai', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ fact })
+                });
+                if(res.ok) {
+                    input.value = '';
+                    fetchKB();
+                }
+            } catch(e) { console.error(e); }
+        });
+
+        fetchQuotes();
+        fetchKB();
+    </script>
+<script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.19/bundled/lenis.min.js"></script>
+<script>
+    const lenis = new Lenis({ duration: 1.2, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)) });
+    function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
+    requestAnimationFrame(raf);
+</script>
+<script src="/scripts/chatbot.js"></script>
+</body>
+</html>
+
