@@ -425,51 +425,7 @@
 
         </div>
 
-        <!-- Interactive Illustration Scrollbar -->
-        <div class="reels-scrollbar-track" id="reels-track">
-            <div class="reels-scrollbar-thumb" id="reels-thumb">
-                <!-- Cocoon -->
-                <svg class="cocoon-svg" viewBox="0 0 100 150" style="overflow:visible;">
-                    <!-- Uses the same defs as global by id reference, or redefine here if needed. Since they are inline, we can reuse urls from defs above! -->
-                    <path d="M45 0 Q50 15 50 25" stroke="#3e2723" stroke-width="4" fill="none"/>
-                    <path d="M55 0 Q50 15 50 25" stroke="#3e2723" stroke-width="4" fill="none"/>
-                    <polygon points="45,25 55,25 50,35" fill="#3e2723"/>
-                    <path d="M50 35 C20 45, 10 90, 35 130 C45 145, 55 145, 65 130 C90 90, 80 45, 50 35 Z" fill="url(#cocoonBody)"/>
-                    <path d="M22 70 Q50 65 78 70" stroke="#111" stroke-width="3" fill="none"/>
-                    <path d="M22 68 Q50 63 78 68" stroke="url(#goldTrim)" stroke-width="2" fill="none" stroke-dasharray="2 3"/>
-                    <path d="M25 90 Q50 95 75 90" stroke="rgba(255,255,255,0.2)" stroke-width="1" fill="none"/>
-                    <path d="M30 110 Q50 115 70 110" stroke="rgba(255,255,255,0.2)" stroke-width="1" fill="none"/>
-                    <circle cx="40" cy="115" r="1.5" fill="url(#goldTrim)"/>
-                    <circle cx="60" cy="115" r="1.5" fill="url(#goldTrim)"/>
-                </svg>
-                <!-- Butterfly -->
-                <div class="butterfly-wrapper">
-                    <svg class="scroll-butterfly butterfly-svg" viewBox="0 0 200 200" style="overflow:visible;">
-                        <g class="wing left" transform-origin="100 100">
-                            <path d="M100 100 C70 50, 10 30, 20 80 C25 100, 70 110, 100 100" fill="url(#wingGrad)" stroke="#1c1c1c" stroke-width="2"/>
-                            <path d="M100 100 C70 120, 30 160, 40 180 C45 190, 50 170, 55 160 C70 140, 90 120, 100 100" fill="url(#wingGrad)" stroke="#1c1c1c" stroke-width="2"/>
-                            <path d="M100 100 L20 80 M100 100 L40 180 M60 75 L30 45 M70 140 L50 165" stroke="#1c1c1c" stroke-width="1.5"/>
-                            <circle cx="40" cy="70" r="4" fill="#1c1c1c"/>
-                            <circle cx="60" cy="80" r="6" fill="#1c1c1c"/>
-                            <circle cx="55" cy="140" r="5" fill="#1c1c1c"/>
-                            <circle cx="70" cy="125" r="3" fill="#1c1c1c"/>
-                        </g>
-                        <g class="wing right" transform-origin="100 100">
-                            <path d="M100 100 C130 50, 190 30, 180 80 C175 100, 130 110, 100 100" fill="url(#wingGrad)" stroke="#1c1c1c" stroke-width="2"/>
-                            <path d="M100 100 C130 120, 170 160, 160 180 C155 190, 150 170, 145 160 C130 140, 110 120, 100 100" fill="url(#wingGrad)" stroke="#1c1c1c" stroke-width="2"/>
-                            <path d="M100 100 L180 80 M100 100 L160 180 M140 75 L170 45 M130 140 L150 165" stroke="#1c1c1c" stroke-width="1.5"/>
-                            <circle cx="160" cy="70" r="4" fill="#1c1c1c"/>
-                            <circle cx="140" cy="80" r="6" fill="#1c1c1c"/>
-                            <circle cx="145" cy="140" r="5" fill="#1c1c1c"/>
-                            <circle cx="130" cy="125" r="3" fill="#1c1c1c"/>
-                        </g>
-                        <rect x="96" y="70" width="8" height="60" rx="4" fill="#1c1c1c"/>
-                        <circle cx="100" cy="65" r="5" fill="#1c1c1c"/>
-                        <path d="M98 62 Q90 40 85 45 M102 62 Q110 40 115 45" stroke="#1c1c1c" stroke-width="2" fill="none"/>
-                    </svg>
-                </div>
-            </div>
-        </div>
+
     </section>
 
     <!-- Footer Section -->
@@ -604,38 +560,7 @@
             });
         });
 
-        // --- 7. Interactive Reels Scrollbar Logic ---
-        const reelsContainer = document.querySelector('.reels-container');
-        const scrollThumb = document.getElementById('reels-thumb');
-        const scrollTrack = document.getElementById('reels-track');
 
-        if (reelsContainer && scrollThumb && scrollTrack) {
-            reelsContainer.addEventListener('scroll', () => {
-                const maxScroll = reelsContainer.scrollWidth - reelsContainer.clientWidth;
-                if (maxScroll > 0) {
-                    const progress = reelsContainer.scrollLeft / maxScroll;
-                    scrollThumb.style.left = `${progress * 100}%`;
-                    scrollThumb.style.setProperty('--scroll-progress', progress);
-                    
-                    // Adjust flapping speed based on progress (moth slow -> butterfly fast)
-                    const speed = 0.4 - (progress * 0.3);
-                    scrollThumb.querySelectorAll('.wing').forEach(w => w.style.animationDuration = speed + 's');
-                }
-            });
-
-            // Click on track to seek
-            scrollTrack.addEventListener('click', (e) => {
-                const trackRect = scrollTrack.getBoundingClientRect();
-                const clickX = e.clientX - trackRect.left;
-                const progress = Math.max(0, Math.min(1, clickX / trackRect.width));
-                const maxScroll = reelsContainer.scrollWidth - reelsContainer.clientWidth;
-                
-                reelsContainer.scrollTo({
-                    left: progress * maxScroll,
-                    behavior: 'smooth'
-                });
-            });
-        }
 
         // --- 8. Global Scrolling Moth-to-Butterfly & Parallax ---
         window.addEventListener('scroll', () => {
