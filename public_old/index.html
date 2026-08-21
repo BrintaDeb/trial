@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atelier Studios | Next-Gen Agency</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=DM+Sans:wght@400;500;700&family=Titan+One&display=swap" rel="stylesheet">
+    
+    <!-- Global Styles -->
+    <link rel="stylesheet" href="/styles/main.css">
+    
+    <!-- Spline 3D Viewer -->
+    <script type="module" src="https://unpkg.com/@splinetool/viewer@1.0.51/build/spline-viewer.js"></script>
+    
+    <style>
+        /* Hide Default Cursor for Desktop */
+        @media(pointer: fine) { body { cursor: none; } }
+
+        /* Custom Cursor */
+        #custom-cursor {
+            position: fixed; top: 0; left: 0; width: 12px; height: 12px;
+            background: var(--accent-primary); border-radius: 50%;
+            pointer-events: none; z-index: 10000;
+            transform: translate(-50%, -50%); transition: width 0.3s, height 0.3s, background 0.3s;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0; color: transparent; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;
+        }
+        #custom-cursor.hover-view {
+            width: 80px; height: 80px; background: rgba(255, 255, 255, 0.9); color: black; font-size: 0.8rem;
+        }
+
+        /* Hero Z-Index Sandwich Typography */
+        .hero-sandwich-section {
+            position: relative;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            z-index: 10;
+        }
+
+        .hero-text-wrapper {
+            position: relative;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .hero-text-back {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1;
+            text-align: center;
+            pointer-events: none;
+        }
+
+        .hero-text-back .hero-display-text {
+            font-size: clamp(4rem, 10vw, 10rem);
+            font-family: var(--font-header);
+            color: var(--text-primary);
+            line-height: 0.95;
+            margin: 0;
+            white-space: nowrap;
+        }
+
+        .spline-container-depth {
+            position: fixed; /* Fixed so it stays on screen */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            z-index: 2; /* Sandwiched between back and front text */
+            pointer-events: auto;
+            transform-origin: center center;
+        }
+
+        .hero-text-front {
+            position: relative;
+            z-index: 3;
+            width: 100%;
+            text-align: center;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .hero-text-front .hero-display-text {
+            font-size: clamp(4rem, 10vw, 10rem);
+            font-family: var(--font-header);
+            color: var(--text-primary);
+            line-height: 0.95;
+            margin: 0;
+            margin-bottom: 2rem;
+            text-shadow: 0 10px 30px rgba(0,0,0,0.3); /* Pop off the Spline model */
+        }
+
+        .hero-subtitle { font-size: clamp(1rem, 2vw, 1.2rem); font-weight: 600; color: var(--text-secondary); max-width: 600px; margin-bottom: 2rem;}
+        
+        .hero-badge {
+            position: absolute;
+            left: 5%;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 150px;
+            height: 150px;
+            z-index: 4;
+            pointer-events: none;
+        }
+        
+        .rotating-badge {
+            width: 100%;
+            height: 100%;
+            animation: spin 15s linear infinite;
+        }
+        
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* Infinite Marquee */
+        .marquee-container { width: 100%; overflow: hidden; white-space: nowrap; padding: 3rem 0; border-top: 1px solid rgba(255,255,255,0.1); border-bottom: 1px solid rgba(255,255,255,0.1); background: var(--bg-secondary); position: relative; z-index: 10;}
+        .marquee-text { display: inline-block; font-size: 4rem; font-family: 'Outfit'; font-weight: 700; color: transparent; -webkit-text-stroke: 1px rgba(255,255,255,0.3); animation: marquee 20s linear infinite; padding-left: 2rem;}
+        .marquee-text span { color: var(--text-primary); -webkit-text-stroke: 0; }
+        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+        /* Showreel Section */
+        .showreel-section { padding: 5rem 5%; background: var(--bg-primary); position: relative; z-index: 10; }
+        .showreel-container { width: 100%; height: 70vh; border-radius: 20px; overflow: hidden; position: relative; cursor: pointer; }
+        .showreel-container video { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.7) grayscale(0.5); transition: filter 0.5s; }
+        .showreel-container:hover video { filter: brightness(1) grayscale(0); }
+        .showreel-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: 'Outfit'; font-size: 3rem; font-weight: 900; pointer-events: none;}
+
+        /* Bento Grid Portfolio */
+        .portfolio-section { padding: 5rem 5%; background: var(--bg-secondary); position: relative; z-index: 10;}
+        .section-header { font-size: 4rem; font-family: 'Outfit'; font-weight: 900; margin-bottom: 3rem;}
+        .bento-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 2rem; }
+        
+        .bento-item { border-radius: 24px; overflow: hidden; position: relative; border: 1px solid var(--glass-border); cursor: pointer; }
+        .bento-item img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .bento-item:hover img { transform: scale(1.05); }
+        .bento-meta { position: absolute; bottom: 0; left: 0; width: 100%; padding: 2rem; background: linear-gradient(transparent, rgba(0,0,0,0.9)); color: white; transform: translateY(20px); opacity: 0; transition: all 0.3s; }
+        .bento-item:hover .bento-meta { transform: translateY(0); opacity: 1; }
+        .bento-meta h3 { font-family: 'Outfit'; font-size: 1.5rem; margin-bottom: 0.2rem;}
+        .bento-meta p { color: var(--text-secondary); font-size: 0.9rem;}
+
+        .item-1 { grid-column: span 12; height: 60vh; }
+        .item-2 { grid-column: span 7; height: 50vh; }
+        .item-3 { grid-column: span 5; height: 50vh; }
+
+        @media(max-width: 768px) {
+            .item-1, .item-2, .item-3 { grid-column: span 12; height: 40vh; }
+            .hero-title { font-size: 3.5rem; }
+            .marquee-text { font-size: 2.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="noise-overlay"></div>
+    <!-- Global 3D Loader -->
+    <div class="global-loader" id="global-loader">
+        <div class="loader-logo-3d">Atelier Studios.</div>
+        <div class="loader-text">Loading Assets</div>
+    </div>
+
+    <!-- Background Parallax Vectors -->
+    <div class="bg-vectors" id="bg-vectors">
+        <div class="bg-shape bg-shape-1"></div>
+        <div class="bg-shape bg-shape-2"></div>
+        <div class="bg-shape bg-shape-3"></div>
+    </div>
+
+    <!-- Global 3D Moth-to-Butterfly Indicator -->
+    <div class="global-butterfly-indicator" id="global-butterfly">
+        <!-- Cocoon element (fades out) -->
+        <svg class="cocoon-svg" viewBox="0 0 100 150" style="overflow:visible;">
+            <defs>
+                <linearGradient id="cocoonBody" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#b4c673" />
+                    <stop offset="50%" stop-color="#8da35c" />
+                    <stop offset="100%" stop-color="#4a5f2c" />
+                </linearGradient>
+                <linearGradient id="goldTrim" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#FFDF00" />
+                    <stop offset="50%" stop-color="#D4AF37" />
+                    <stop offset="100%" stop-color="#996515" />
+                </linearGradient>
+            </defs>
+            <path d="M45 0 Q50 15 50 25" stroke="#3e2723" stroke-width="4" fill="none"/>
+            <path d="M55 0 Q50 15 50 25" stroke="#3e2723" stroke-width="4" fill="none"/>
+            <polygon points="45,25 55,25 50,35" fill="#3e2723"/>
+            <path d="M50 35 C20 45, 10 90, 35 130 C45 145, 55 145, 65 130 C90 90, 80 45, 50 35 Z" fill="url(#cocoonBody)"/>
+            <path d="M22 70 Q50 65 78 70" stroke="#111" stroke-width="3" fill="none"/>
+            <path d="M22 68 Q50 63 78 68" stroke="url(#goldTrim)" stroke-width="2" fill="none" stroke-dasharray="2 3"/>
+            <path d="M25 90 Q50 95 75 90" stroke="rgba(255,255,255,0.2)" stroke-width="1" fill="none"/>
+            <path d="M30 110 Q50 115 70 110" stroke="rgba(255,255,255,0.2)" stroke-width="1" fill="none"/>
+            <circle cx="40" cy="115" r="1.5" fill="url(#goldTrim)"/>
+            <circle cx="60" cy="115" r="1.5" fill="url(#goldTrim)"/>
+        </svg>
+        
+        <!-- Butterfly element (fades in) -->
+        <div class="butterfly-wrapper">
+            <svg class="butterfly-svg" viewBox="0 0 200 200" style="overflow:visible;">
+                <defs>
+                    <linearGradient id="wingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#14B8A6" />
+                        <stop offset="100%" stop-color="#0d7a6e" />
+                    </linearGradient>
+                </defs>
+                <g class="wing left" transform-origin="100 100">
+                    <path d="M100 100 C70 50, 10 30, 20 80 C25 100, 70 110, 100 100" fill="url(#wingGrad)" stroke="#1c1c1c" stroke-width="2"/>
+                    <path d="M100 100 C70 120, 30 160, 40 180 C45 190, 50 170, 55 160 C70 140, 90 120, 100 100" fill="url(#wingGrad)" stroke="#1c1c1c" stroke-width="2"/>
+                    <path d="M100 100 L20 80 M100 100 L40 180 M60 75 L30 45 M70 140 L50 165" stroke="#1c1c1c" stroke-width="1.5"/>
+                    <circle cx="40" cy="70" r="4" fill="#1c1c1c"/>
+                    <circle cx="60" cy="80" r="6" fill="#1c1c1c"/>
+                    <circle cx="55" cy="140" r="5" fill="#1c1c1c"/>
+                    <circle cx="70" cy="125" r="3" fill="#1c1c1c"/>
+                </g>
+                <g class="wing right" transform-origin="100 100">
+                    <path d="M100 100 C130 50, 190 30, 180 80 C175 100, 130 110, 100 100" fill="url(#wingGrad)" stroke="#1c1c1c" stroke-width="2"/>
+                    <path d="M100 100 C130 120, 170 160, 160 180 C155 190, 150 170, 145 160 C130 140, 110 120, 100 100" fill="url(#wingGrad)" stroke="#1c1c1c" stroke-width="2"/>
+                    <path d="M100 100 L180 80 M100 100 L160 180 M140 75 L170 45 M130 140 L150 165" stroke="#1c1c1c" stroke-width="1.5"/>
+                    <circle cx="160" cy="70" r="4" fill="#1c1c1c"/>
+                    <circle cx="140" cy="80" r="6" fill="#1c1c1c"/>
+                    <circle cx="145" cy="140" r="5" fill="#1c1c1c"/>
+                    <circle cx="130" cy="125" r="3" fill="#1c1c1c"/>
+                </g>
+                <rect x="96" y="70" width="8" height="60" rx="4" fill="#1c1c1c"/>
+                <circle cx="100" cy="65" r="5" fill="#1c1c1c"/>
+                <path d="M98 62 Q90 40 85 45 M102 62 Q110 40 115 45" stroke="#1c1c1c" stroke-width="2" fill="none"/>
+            </svg>
+        </div>
+    </div>
+
+    <!-- Custom Cursor -->
+    <div id="custom-cursor"></div>
+
+    <!-- Navigation -->
+    <nav class="navbar glass-panel" style="z-index: 100;">
+        <a href="/" class="logo cursor-link" style="text-decoration:none;">Atelier Studios<span>.</span></a>
+        <div class="menu-toggle" id="mobile-menu"><span></span><span></span><span></span></div>
+        <ul class="nav-links">
+            <li><a href="/about.html" class="cursor-link">About Us</a></li>
+            <li><a href="#services" class="cursor-link">Services</a></li>
+            <li><a href="#work" class="cursor-link">Work</a></li>
+            <li><a href="/quote.html" class="cursor-link">Get a Quote</a></li>
+            <li><a href="/login.html" class="btn btn-primary cursor-link" style="padding: 0.5rem 1.5rem; font-size:0.9rem;"><span>Client Portal</span></a></li>
+        </ul>
+    </nav>
+
+    <!-- Background Particles -->
+    <div id="tsparticles" style="z-index: 0;"></div>
+
+    <!-- 3D Depth Sandwich Hero -->
+    <section class="hero-sandwich-section">
+        
+        <!-- Spinning Badge -->
+        <div class="hero-badge">
+            <svg viewBox="0 0 100 100" class="rotating-badge">
+                <defs>
+                    <path id="circlePath" d="M 50, 50 m -35, 0 a 35,35 0 1,1 70,0 a 35,35 0 1,1 -70,0"/>
+                </defs>
+                <text font-family="var(--font-header)" font-size="11" fill="var(--text-primary)">
+                    <textPath href="#circlePath">CREATE THE FUTURE • BUILD IT YOURSELF • </textPath>
+                </text>
+                <path d="M50 35 L50 65 M40 55 L50 65 L60 55" stroke="var(--text-primary)" stroke-width="2" fill="none"/>
+            </svg>
+        </div>
+
+        <!-- Semantic H1 for Screen Readers -->
+        <h1 style="position:absolute; width:1px; height:1px; margin:-1px; padding:0; overflow:hidden; clip:rect(0,0,0,0); border:0;">Digital Craft Without Limits</h1>
+
+        <!-- Wrapper for perfect alignment -->
+        <div class="hero-text-wrapper">
+            <!-- Z-Index 1: Background Text -->
+            <div class="hero-text-back" aria-hidden="true">
+                <div class="hero-display-text">DIGITAL<br>CRAFT<br>WITHOUT<br><span style="opacity:0">LIMITS</span></div>
+            </div>
+
+            <!-- Z-Index 2: 3D Object (Spline) -->
+            <div class="spline-container-depth">
+                <spline-viewer url="https://prod.spline.design/iW5aK0aT8x1A-6G3/scene.splinecode"></spline-viewer>
+            </div>
+
+            <!-- Z-Index 3: Foreground Text -->
+            <div class="hero-text-front" aria-hidden="true">
+                <div class="hero-display-text"><span style="opacity:0">DIGITAL<br>CRAFT<br>WITHOUT<br></span>LIMITS</div>
+                <p class="hero-subtitle">
+                    We craft data-driven digital marketing campaigns,<br>
+                    high-converting ad strategies, and bold brand identities<br>
+                    for companies that <span class="accent-text" style="color: var(--accent-primary); font-size: 1.5em; display: inline-block; transform: rotate(-2deg);">refuse to be normal.</span>
+                </p>
+                <div style="pointer-events: auto; display:flex; gap: 1rem; align-items:center;">
+                    <button class="btn btn-primary cursor-link" onclick="openLeadModal()">START A PROJECT <span class="btn-icon">→</span></button>
+                    <button class="btn btn-secondary cursor-link" onclick="openShowreelModal()">
+                        <span class="btn-icon">▶</span> PLAY SHOWREEL
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Showreel Modal -->
+    <div id="showreel-modal" class="showreel-modal">
+        <button class="close-modal cursor-link" onclick="closeShowreelModal()">✕</button>
+        <div class="video-container">
+            <!-- 4K Stock Video Placeholder -->
+            <video id="showreel-video" controls loop>
+                <source src="https://cdn.pixabay.com/video/2022/10/24/136237-765045479_large.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        </div>
+    </div>
+
+    <!-- Infinite Marquee -->
+    <div class="marquee-container">
+        <div class="marquee-text">
+            UI/UX DESIGN • <span>WEB DEVELOPMENT</span> • 3D MOTION • <span>BRAND STRATEGY</span> • SEO OPTIMIZATION • UI/UX DESIGN • <span>WEB DEVELOPMENT</span> • 3D MOTION • <span>BRAND STRATEGY</span> • SEO OPTIMIZATION •
+        </div>
+    </div>
+
+    <!-- Lumina Interactive Services Dial Section -->
+    <section class="services-dial-section" id="services">
+        <!-- Left Side: Dial -->
+        <div class="dial-container cursor-view" data-cursor-text="SPIN" id="services-dial">
+            <svg class="dial-svg-text" viewBox="0 0 500 500">
+                <defs>
+                    <path id="textPath" d="M 250, 50 a 200,200 0 1,1 0,400 a 200,200 0 1,1 0,-400" />
+                </defs>
+                <text>
+                    <textPath href="#textPath" startOffset="0%">SEO & LOCAL SEO &bull; PAY-PER-CLICK ADS &bull; SOCIAL MEDIA &bull; EMAIL MARKETING &bull; SEO & LOCAL SEO &bull; PAY-PER-CLICK ADS &bull;</textPath>
+                </text>
+            </svg>
+            
+            <div class="dial-hexagon" id="dial-hexagon">
+                <div class="dial-center-node">
+                    <div class="dial-number" id="dial-number">01</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side: Content Panel -->
+        <div class="dial-content-panel" id="dial-panel">
+            <div class="panel-header">
+                <div class="panel-title-group">
+                    <span class="panel-number-badge" id="panel-badge">01</span>
+                    <h2 id="panel-title">Branding</h2>
+                </div>
+                <div class="panel-tags" id="panel-tags">
+                    <span class="panel-tag">TYPOGRAPHY</span>
+                    <span class="panel-tag">COLOUR SYSTEM</span>
+                    <span class="panel-tag">VISUAL IDENTITY</span>
+                </div>
+            </div>
+            
+            <p class="panel-description" id="panel-desc">
+                Branding that helps your brand stand out. From visual identity systems and logos to brand guidelines and positioning, we create brands designed for recognition.
+            </p>
+
+            <div class="panel-gallery" id="panel-gallery">
+                <img src="/assets/saas_dashboard_1787255806254.jpg" alt="Brand 1" loading="lazy">
+                <img src="https://images.unsplash.com/photo-1542744094-3a31f272c490?auto=format&fit=crop&w=400&q=80" alt="Brand 2" loading="lazy">
+                <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=400&q=80" alt="Brand 3" loading="lazy">
+            </div>
+        </div>
+    </section>
+
+    <!-- Showreel Video Embedded -->
+    <section class="showreel-section">
+        <div class="showreel-container" id="inline-showreel-container">
+            <div class="showreel-thumbnail" id="showreel-thumbnail">
+                <div class="showreel-overlay">
+                    <h2 style="font-family:'Outfit'; font-weight:900; font-size:3rem; margin:0; letter-spacing:2px; color:#fff;">ATELIER SHOWREEL</h2>
+                    <button class="btn-play-showreel" onclick="playEmbeddedShowreel()">PLAY</button>
+                </div>
+            </div>
+            <!-- 4K AI Agent Services Video -->
+            <video id="inline-showreel-video" controls playsinline preload="metadata">
+                <source src="https://cdn.pixabay.com/video/2024/02/21/201308-915397455_large.mp4" type="video/mp4">
+            </video>
+        </div>
+    </section>
+
+    <!-- Reels Scroller -->
+    <section class="lumina-reels-section" id="work">
+        <h2 class="section-header gradient-text" style="margin-bottom: 2rem;">Selected Work</h2>
+        
+        <div class="reels-container">
+            
+            <a class="reels-card cursor-view" data-cursor-text="VIEW" href="#">
+                <img src="/assets/graphic_design.jpg" alt="Graphic Design Portfolio" loading="lazy">
+                <div class="reels-meta">
+                    <span>Branding / UI UX</span>
+                    <h3>Graphic Design</h3>
+                </div>
+            </a>
+            
+            <a class="reels-card cursor-view" data-cursor-text="VIEW" href="#">
+                <img src="/assets/seo_management.jpg" alt="SEO Management Dashboard" loading="lazy">
+                <div class="reels-meta">
+                    <span>Analytics / Growth</span>
+                    <h3>SEO Management</h3>
+                </div>
+            </a>
+
+            <a class="reels-card cursor-view" data-cursor-text="VIEW" href="#">
+                <img src="/assets/web_dev.jpg" alt="Web Development" loading="lazy">
+                <div class="reels-meta">
+                    <span>Frontend / Performance</span>
+                    <h3>Web Development</h3>
+                </div>
+            </a>
+            
+            <a class="reels-card cursor-view" data-cursor-text="VIEW" href="#">
+                <img src="/assets/full_stack.jpg" alt="Full Stack Development" loading="lazy">
+                <div class="reels-meta">
+                    <span>Architecture / Backend</span>
+                    <h3>Full Stack Development</h3>
+                </div>
+            </a>
+
+        </div>
+
+
+    </section>
+
+    <!-- Footer Section -->
+    <footer class="site-footer">
+        <div class="footer-top">
+            <div class="footer-cta">
+                <h2>Got a project?<br>Let's talk.</h2>
+                <a href="/quote.html" class="btn btn-primary cursor-view" data-cursor-text="LET'S GO"><span>Start Your Project</span></a>
+            </div>
+            
+            <div class="footer-links-grid">
+                <div class="footer-column">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="#" class="cursor-link">About Us</a></li>
+                        <li><a href="#" class="cursor-link">Services</a></li>
+                        <li><a href="#" class="cursor-link">Portfolio</a></li>
+                        <li><a href="#" class="cursor-link">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Legal & Trust</h4>
+                    <ul>
+                        <li><a href="#" class="cursor-link">Privacy Policy</a></li>
+                        <li><a href="#" class="cursor-link">Terms of Service</a></li>
+                        <li><a href="#" class="cursor-link">Cookie Policy</a></li>
+                        <li><a href="#" class="cursor-link">Legal Disclosure</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h4>Social Media</h4>
+                    <ul class="social-links-icons" style="display:grid; grid-template-columns: repeat(2, 45px); gap: 1rem; list-style:none; padding:0;">
+                        <li><a href="https://instagram.com/atelierstudios" target="_blank" class="cursor-link btn-social">
+                            <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+                        </a></li>
+                        <li><a href="https://twitter.com/atelierstudios" target="_blank" class="cursor-link btn-social">
+                            <svg viewBox="0 0 24 24"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path></svg>
+                        </a></li>
+                        <li><a href="https://linkedin.com/company/atelierstudios" target="_blank" class="cursor-link btn-social">
+                            <svg viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+                        </a></li>
+                        <li><a href="https://behance.net/atelierstudios" target="_blank" class="cursor-link btn-social">
+                            <svg viewBox="0 0 24 24"><path d="M22 20h-7v-2h7v2zm-2-6h-5c0 1.1.9 2 2 2s2-.9 2-2zm-2-2c-1.1 0-2 .9-2 2h4c0-1.1-.9-2-2-2zM4 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm0-4c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2z" stroke="none" fill="currentColor"/></svg>
+                        </a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <div class="footer-trust">
+                <div class="trust-badge">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-secondary)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                    256-Bit Secure
+                </div>
+                <div class="trust-badge">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v8"></path><path d="M8 12h8"></path></svg>
+                    ISO Certified
+                </div>
+            </div>
+            
+            <p>&copy; 2026 Atelier Studios. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles-engine@2.12.0/tsparticles.engine.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles-basic@2.12.0/tsparticles.basic.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
+    <!-- Lenis Smooth Scroll -->
+    <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.19/bundled/lenis.min.js"></script>
+    
+    <script>
+        // --- 1. ALWAYS DISMISS LOADER FIRST to prevent hanging ---
+        const hideLoader = () => {
+            const loader = document.getElementById('global-loader');
+            if (loader && !loader.classList.contains('hidden')) {
+                loader.classList.add('hidden');
+                setTimeout(() => { loader.style.pointerEvents = 'none'; loader.style.display = 'none'; }, 800);
+            }
+        };
+        // Wait for page load or max 1.5s
+        window.addEventListener('load', hideLoader);
+        setTimeout(hideLoader, 1500);
+
+        // --- 2. Particles ---
+        tsParticles.load("tsparticles", { fpsLimit: 60, particles: { color: { value: ["#14B8A6", "#D4AF37"] }, links: { enable: false }, move: { enable: true, speed: 0.5 }, number: { value: 30 }, opacity: { value: 0.3 }, size: { value: { min: 1, max: 3 } } }});
+
+        // --- 3. Mobile Menu Toggle ---
+        document.getElementById('mobile-menu').addEventListener('click', function() {
+            this.classList.toggle('active');
+            document.querySelector('.nav-links').classList.toggle('active');
+        });
+
+        // --- 4. Lenis Setup ---
+        const lenis = new Lenis({ duration: 1.2, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)) });
+        function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
+        requestAnimationFrame(raf);
+
+        // --- 5. Custom Cursor Logic ---
+        const cursor = document.getElementById('custom-cursor');
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+        });
+
+        document.querySelectorAll('.cursor-link').forEach(link => {
+            link.addEventListener('mouseenter', () => cursor.style.transform = 'translate(-50%, -50%) scale(1.5)');
+            link.addEventListener('mouseleave', () => cursor.style.transform = 'translate(-50%, -50%) scale(1)');
+        });
+
+        document.querySelectorAll('.cursor-view').forEach(elem => {
+            elem.addEventListener('mouseenter', () => {
+                cursor.classList.add('hover-view');
+                cursor.innerText = elem.dataset.cursorText || 'VIEW';
+            });
+            elem.addEventListener('mouseleave', () => {
+                cursor.classList.remove('hover-view');
+                cursor.innerText = '';
+            });
+        });
+
+        // --- 6. iOS Glass Button Hover Tracking ---
+        document.querySelectorAll('.btn').forEach(btn => {
+            btn.addEventListener('mousemove', e => {
+                const rect = btn.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                btn.style.setProperty('--mouse-x', `${x}px`);
+                btn.style.setProperty('--mouse-y', `${y}px`);
+            });
+        });
+
+
+
+        // --- 8. Global Scrolling Moth-to-Butterfly & Parallax ---
+        window.addEventListener('scroll', () => {
+            // Calculate global page scroll progress (0 to 1)
+            const maxScroll = document.body.scrollHeight - window.innerHeight;
+            const progress = maxScroll > 0 ? (window.scrollY / maxScroll) : 0;
+            
+            // 8a. Global Butterfly morph
+            const globalButterfly = document.getElementById('global-butterfly');
+            if (globalButterfly) {
+                globalButterfly.style.setProperty('--page-progress', progress);
+                const speed = 0.4 - (progress * 0.3);
+                globalButterfly.querySelectorAll('.wing').forEach(w => w.style.animationDuration = speed + 's');
+            }
+
+            // 8b. Background Parallax Vectors
+            const bgVectors = document.getElementById('bg-vectors');
+            if (bgVectors) {
+                // Move backgrounds opposite to scroll to create depth
+                bgVectors.style.transform = `translateY(${window.scrollY * -0.2}px)`;
+            }
+        });
+
+        // --- 9. Lumina Services Dial Logic ---
+        const servicesData = [
+            {
+                id: "01",
+                title: "SEO & Local SEO",
+                tags: ["KEYWORD STRATEGY", "ON-PAGE", "LINK BUILDING", "LOCAL PACK"],
+                desc: "Dominate search rankings. We optimize your digital presence for local intent and national authority to drive organic, high-intent traffic.",
+                images: [
+                    "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=400&q=80",
+                    "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=400&q=80",
+                    "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=400&q=80"
+                ]
+            },
+            {
+                id: "02",
+                title: "Pay-Per-Click Ads",
+                tags: ["GOOGLE ADS", "META ADS", "RETARGETING", "A/B TESTING"],
+                desc: "Maximize your ROI with hyper-targeted campaigns across Google and Meta. We design thumb-stopping static graphics and carousels that convert.",
+                images: [
+                    "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=400&q=80",
+                    "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=400&q=80",
+                    "https://images.unsplash.com/photo-1542744094-3a31f272c490?auto=format&fit=crop&w=400&q=80"
+                ]
+            },
+            {
+                id: "03",
+                title: "Social Media Management",
+                tags: ["GRID STRATEGY", "COPYWRITING", "GRAPHIC DESIGN", "ENGAGEMENT"],
+                desc: "Build a community and establish authority. We handle grid planning, compelling copywriting, and bespoke static graphic design.",
+                images: [
+                    "https://images.unsplash.com/photo-1618761714954-0b8cd0026356?auto=format&fit=crop&w=400&q=80",
+                    "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=400&q=80",
+                    "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=400&q=80"
+                ]
+            },
+            {
+                id: "04",
+                title: "Email Marketing",
+                tags: ["DRIP CAMPAIGNS", "NEWSLETTERS", "LEAD NURTURING", "ANALYTICS"],
+                desc: "Turn leads into loyal customers. We build automated nurture sequences and weekly newsletters that keep your audience engaged and buying.",
+                images: [
+                    "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=400&q=80",
+                    "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=400&q=80",
+                    "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=400&q=80"
+                ]
+            }
+        ];
+
+        let currentServiceIndex = 0;
+        let totalDialRotation = 0;
+        let autoSpinInterval;
+        const sectionColors = ['rgba(20, 184, 166, 0.15)', 'rgba(212, 175, 55, 0.15)', 'rgba(99, 102, 241, 0.15)'];
+        
+        const dialSection = document.querySelector('.services-dial-section');
+        const dialContainer = document.getElementById('services-dial');
+        const dialHexagon = document.getElementById('dial-hexagon');
+        const dialNumber = document.getElementById('dial-number');
+        const dialPanel = document.getElementById('dial-panel');
+
+        function triggerDialSpin() {
+            currentServiceIndex = (currentServiceIndex + 1) % servicesData.length;
+            const data = servicesData[currentServiceIndex];
+            
+            if (dialSection) dialSection.style.setProperty('--active-glow-color', sectionColors[currentServiceIndex]);
+            
+            // Continuous clockwise rotation (120deg per tick)
+            totalDialRotation += 120;
+            dialContainer.style.transform = `rotate(${totalDialRotation}deg)`;
+            
+            // Counter rotate the hexagon so it stays upright
+            dialHexagon.style.transform = `rotate(${-totalDialRotation}deg)`;
+            
+            // Fade out content panel
+            dialPanel.classList.add('fade-out');
+            
+            setTimeout(() => {
+                // Update content
+                dialNumber.innerText = data.id;
+                document.getElementById('panel-badge').innerText = data.id;
+                document.getElementById('panel-title').innerText = data.title;
+                document.getElementById('panel-desc').innerText = data.desc;
+                
+                document.getElementById('panel-tags').innerHTML = data.tags.map(t => `<span class="panel-tag">${t}</span>`).join('');
+                document.getElementById('panel-gallery').innerHTML = data.images.map(src => `<img src="${src}" alt="Gallery Item" loading="lazy">`).join('');
+                
+                // Fade back in
+                dialPanel.classList.remove('fade-out');
+            }, 300);
+        }
+
+        if (dialContainer) {
+            // Manual Spin
+            dialContainer.addEventListener('click', () => {
+                triggerDialSpin();
+                resetAutoSpin();
+            });
+            
+            // Auto Spin
+            function resetAutoSpin() {
+                clearInterval(autoSpinInterval);
+                autoSpinInterval = setInterval(triggerDialSpin, 5000);
+            }
+            
+            resetAutoSpin();
+            
+            // Pause auto-spin on hover for better UX
+            dialContainer.addEventListener('mouseenter', () => clearInterval(autoSpinInterval));
+            dialContainer.addEventListener('mouseleave', resetAutoSpin);
+            dialPanel.addEventListener('mouseenter', () => clearInterval(autoSpinInterval));
+            dialPanel.addEventListener('mouseleave', resetAutoSpin);
+        }
+        // --- Showreel Modal Logic ---
+        function openShowreelModal() {
+            const modal = document.getElementById('showreel-modal');
+            const video = document.getElementById('showreel-video');
+            modal.classList.add('active');
+            video.play();
+        }
+
+        function closeShowreelModal() {
+            const modal = document.getElementById('showreel-modal');
+            const video = document.getElementById('showreel-video');
+            modal.classList.remove('active');
+            video.pause();
+            video.currentTime = 0;
+        }
+
+        // Close on ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeShowreelModal();
+        });
+
+        // --- Embedded Showreel Logic ---
+        function playEmbeddedShowreel() {
+            const thumbnail = document.getElementById('showreel-thumbnail');
+            const video = document.getElementById('inline-showreel-video');
+            thumbnail.classList.add('hidden');
+            video.classList.add('playing');
+            video.play();
+        }
+
+        // --- Lead Capture Form Logic ---
+        function openLeadModal() {
+            const modal = document.getElementById('lead-modal');
+            modal.classList.add('active');
+            gsap.fromTo('.lead-modal-content', {y: 50, opacity: 0}, {y: 0, opacity: 1, duration: 0.5, ease: 'power3.out'});
+        }
+        function closeLeadModal() {
+            const modal = document.getElementById('lead-modal');
+            gsap.to('.lead-modal-content', {y: 50, opacity: 0, duration: 0.3, onComplete: () => {
+                modal.classList.remove('active');
+            }});
+        }
+    </script>
+    
+    <!-- Multi-Step Lead Capture Modal -->
+    <div id="lead-modal" class="showreel-modal" style="background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);">
+        <button class="close-modal cursor-link" onclick="closeLeadModal()">✕</button>
+        <div class="lead-modal-content" style="background: var(--bg-secondary); max-width: 600px; width: 90%; margin: 5vh auto; padding: 3rem; border-radius: 24px; border: 1px solid rgba(255,255,255,0.1); position: relative; overflow: hidden;">
+            
+            <!-- Progress Bar -->
+            <div style="display: flex; gap: 10px; margin-bottom: 2rem;">
+                <div class="progress-step active"></div>
+                <div class="progress-step"></div>
+                <div class="progress-step"></div>
+            </div>
+
+            <h2 style="margin-bottom: 0.5rem; font-family: var(--font-header);">Let's Build It.</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 2rem;">Tell us what you need and we'll get back to you within 24 hours.</p>
+
+            <form id="leadCaptureForm">
+                
+                <!-- Step 1: Contact -->
+                <div class="form-step" id="step1">
+                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                        <label style="display:block; margin-bottom: 0.5rem; color: var(--text-secondary);">Full Name</label>
+                        <input type="text" id="leadName" required style="width:100%; padding: 1rem; border-radius: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff;" placeholder="Jane Doe">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                        <label style="display:block; margin-bottom: 0.5rem; color: var(--text-secondary);">Email</label>
+                        <input type="email" id="leadEmail" required style="width:100%; padding: 1rem; border-radius: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff;" placeholder="jane@company.com">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 2rem;">
+                        <label style="display:block; margin-bottom: 0.5rem; color: var(--text-secondary);">Company</label>
+                        <input type="text" id="leadCompany" style="width:100%; padding: 1rem; border-radius: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff;" placeholder="Company Inc.">
+                    </div>
+                    <button type="button" class="btn btn-primary" style="width:100%; padding: 1rem;" onclick="nextStep(2)">Next: Project Details →</button>
+                </div>
+
+                <!-- Step 2: Project -->
+                <div class="form-step" id="step2" style="display: none;">
+                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                        <label style="display:block; margin-bottom: 0.5rem; color: var(--text-secondary);">What do you need?</label>
+                        <select id="leadType" style="width:100%; padding: 1rem; border-radius: 12px; background: #2a2f26; border: 1px solid rgba(255,255,255,0.1); color: #fff;">
+                            <option value="SEO & Local SEO">SEO & Local SEO</option>
+                            <option value="PPC Advertising">PPC Advertising (Google/Meta)</option>
+                            <option value="Social Media Management">Social Media Management</option>
+                            <option value="Email Marketing">Email Marketing & Automation</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 2rem;">
+                        <label style="display:block; margin-bottom: 0.5rem; color: var(--text-secondary);">Project Description</label>
+                        <textarea id="leadNotes" rows="4" style="width:100%; padding: 1rem; border-radius: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff;" placeholder="Briefly describe your goals..."></textarea>
+                    </div>
+                    <div style="display: flex; gap: 1rem;">
+                        <button type="button" class="btn btn-secondary" style="flex:1; padding: 1rem;" onclick="nextStep(1)">← Back</button>
+                        <button type="button" class="btn btn-primary" style="flex:2; padding: 1rem;" onclick="nextStep(3)">Next: Budget →</button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Budget -->
+                <div class="form-step" id="step3" style="display: none;">
+                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                        <label style="display:block; margin-bottom: 0.5rem; color: var(--text-secondary);">Estimated Budget (INR)</label>
+                        <select id="leadBudget" style="width:100%; padding: 1rem; border-radius: 12px; background: #2a2f26; border: 1px solid rgba(255,255,255,0.1); color: #fff;">
+                            <option value="< 50k">Under ₹50,000</option>
+                            <option value="50k - 1.5L">₹50,000 - ₹1.5 Lakhs</option>
+                            <option value="1.5L - 5L">₹1.5 Lakhs - ₹5 Lakhs</option>
+                            <option value="> 5L">Over ₹5 Lakhs</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 2rem;">
+                        <label style="display:block; margin-bottom: 0.5rem; color: var(--text-secondary);">Timeline</label>
+                        <select id="leadTimeline" style="width:100%; padding: 1rem; border-radius: 12px; background: #2a2f26; border: 1px solid rgba(255,255,255,0.1); color: #fff;">
+                            <option value="ASAP">ASAP (Urgent)</option>
+                            <option value="1-2 Months">1 - 2 Months</option>
+                            <option value="Flexible">Flexible</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; gap: 1rem;">
+                        <button type="button" class="btn btn-secondary" style="flex:1; padding: 1rem;" onclick="nextStep(2)">← Back</button>
+                        <button type="submit" class="btn btn-primary" style="flex:2; padding: 1rem;" id="submitLeadBtn">Submit Request ✓</button>
+                    </div>
+                </div>
+
+            </form>
+            
+            <!-- Success Message -->
+            <div id="leadSuccess" style="display:none; text-align:center; padding: 2rem 0;">
+                <h3 style="color: #10b981; font-family: var(--font-header); font-size: 2rem; margin-bottom: 1rem;">Got it!</h3>
+                <p>Your request has been captured in our CRM. We'll be in touch shortly.</p>
+                <button class="btn btn-secondary" style="margin-top: 2rem;" onclick="closeLeadModal()">Close</button>
+            </div>
+        </div>
+    </div>
+    
+    <style>
+        .progress-step { flex: 1; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; transition: background 0.3s; }
+        .progress-step.active { background: var(--accent-primary); }
+    </style>
+
+    <script src="/scripts/lead-capture.js"></script>
+    <script src="/scripts/chatbot.js"></script>
+
+    <!-- GSAP & ScrollTrigger -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    
+    <script>
+        // --- UI/UX Pro Max Animations ---
+        gsap.registerPlugin(ScrollTrigger);
+
+        // 1. Initial Load Reveal
+        const tlLoad = gsap.timeline();
+        tlLoad.from('.hero-text-back .hero-display-text', { y: 100, opacity: 0, duration: 1.5, ease: "power4.out" })
+              .from('.hero-text-front .hero-display-text', { y: 100, opacity: 0, duration: 1.5, ease: "power4.out" }, "-=1.2")
+              .from('.hero-subtitle', { y: 30, opacity: 0, duration: 1, ease: "power3.out" }, "-=1")
+              .from('.hero-badge', { scale: 0, opacity: 0, duration: 1, ease: "back.out(1.7)" }, "-=0.8");
+
+        // 2. Scroll-Linked 3D Model (Spline) Animation
+        // As you scroll down, the Spline scales down and shifts left, mimicking the Brew District 24 interaction
+        gsap.to('.spline-container-depth', {
+            scrollTrigger: {
+                trigger: '.marquee-container', // Start animating when we hit the marquee
+                start: "top bottom", 
+                end: "bottom top", 
+                scrub: 1, // Smooth scrubbing
+            },
+            scale: 0.6,
+            x: "-20vw", // Move to the left side
+            y: "10vh",
+            ease: "none"
+        });
+
+        // Continue moving it around in the Services Section
+        gsap.to('.spline-container-depth', {
+            scrollTrigger: {
+                trigger: '.services-dial-section',
+                start: "top center",
+                end: "bottom center",
+                scrub: 1,
+            },
+            scale: 0.4,
+            x: "30vw", // Move to the right side
+            y: "30vh",
+            ease: "power1.inOut"
+        });
+
+        // 3. Scroll Reveal for other texts
+        gsap.utils.toArray('h2.section-title').forEach(title => {
+            gsap.from(title, {
+                scrollTrigger: {
+                    trigger: title,
+                    start: "top 80%"
+                },
+                y: 50,
+                opacity: 0,
+                duration: 1,
+                ease: "power3.out"
+            });
+        });
+    </script>
+</body>
+</html>
