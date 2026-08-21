@@ -5,7 +5,7 @@ const session = require('express-session');
 const bodyParser = require('body-parser');
 const multer = require('multer');
 const mongoose = require('mongoose');
-
+const nodemailer = require('nodemailer');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -59,6 +59,16 @@ const Lead = mongoose.model('Lead', LeadSchema);
 
 const DiscountedEmailSchema = new mongoose.Schema({ email: String });
 const DiscountedEmail = mongoose.model('DiscountedEmail', DiscountedEmailSchema);
+
+// Portfolio Project Schema
+const ProjectSchema = new mongoose.Schema({
+    title: String,
+    description: String,
+    mediaUrl: String,
+    mediaType: { type: String, default: 'image' }, // 'image' or 'video'
+    date: { type: Date, default: Date.now }
+});
+const Project = mongoose.model('Project', ProjectSchema);
 
 // Local Business Lead Schema
 const LocalLeadSchema = new mongoose.Schema({
@@ -185,6 +195,92 @@ app.get('/api/reviews', async (req, res) => {
     }
 });
 
+// In-memory fallback for projects when DB is not connected
+const inMemoryProjects = [];
+
+// Submit Project Endpoint
+app.post('/api/projects', upload.single('media'), async (req, res) => {
+    const { title, description, mediaType } = req.body;
+    const mediaUrl = req.file ? `/uploads/${req.file.filename}` : null;
+    
+    try {
+        if (mongoose.connection.readyState === 1) {
+            const newProject = await Project.create({ title, description, mediaType, mediaUrl });
+            res.json({ success: true, project: newProject });
+        } else {
+            console.warn("DB not connected, saving project to in-memory array for demo.");
+            const newProject = { title, description, mediaType, mediaUrl, date: new Date() };
+            inMemoryProjects.unshift(newProject); // add to top
+            res.json({ success: true, project: newProject });
+        }
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Database Error' });
+    }
+});
+
+// Get Projects Endpoint
+app.get('/api/projects', async (req, res) => {
+    try {
+        if (mongoose.connection.readyState === 1) {
+            const projects = await Project.find().sort({ date: -1 });
+            res.json({ success: true, projects });
+        } else {
+            res.json({ success: true, projects: inMemoryProjects });
+        }
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Database Error' });
+    }
+});
+
+// --- Content Management System ---
+const ContentSchema = new mongoose.Schema({
+    key: { type: String, required: true, unique: true },
+    value: { type: String, required: true }
+});
+const Content = mongoose.model('Content', ContentSchema);
+
+let inMemoryContent = {
+    'about_text': 'I am a Digital nomad currently based in Agartala Tripura. I\'ve been working in graphic design for the past 4 years. It was only in the past year that I decided to focus full-time on UI/UX Designing.',
+    'career_timeline': JSON.stringify([
+        { date: "JAN 2024 - PRESENT", title: "Motion Graphics & Web Developer", status: "NOW", desc: "Working with websites and managing all media @ World Mark Foundation." },
+        { date: "OCT 2024 - DEC 2024", title: "Image Editing and Designing", status: "DONE", desc: "Working with targets and managing design for Ajio products @ Netscribes India Pvt. Ltd." },
+        { date: "JUNE 2024 - AUG 2024", title: "Graphic Designer", status: "DONE", desc: "Working with a big development team to manage design, content, branding and social media @ Minerva Infotech." },
+        { date: "2019 - 2021", title: "Junior Graphic Designer", status: "DONE", desc: "Working with a small team to manage design, content, branding and logo design @ Angel Engineering Solution." }
+    ])
+};
+
+app.get('/api/content', async (req, res) => {
+    try {
+        if (mongoose.connection.readyState === 1) {
+            const contents = await Content.find();
+            const contentMap = {};
+            contents.forEach(c => contentMap[c.key] = c.value);
+            res.json({ success: true, content: { ...inMemoryContent, ...contentMap } });
+        } else {
+            res.json({ success: true, content: inMemoryContent });
+        }
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Database Error' });
+    }
+});
+
+app.post('/api/content', async (req, res) => {
+    if (!req.session.user || (req.session.user.role !== 'admin' && req.session.user.role !== 'manager')) {
+        return res.status(403).json({ success: false, message: 'Unauthorized' });
+    }
+    const { key, value } = req.body;
+    try {
+        if (mongoose.connection.readyState === 1) {
+            await Content.findOneAndUpdate({ key }, { value }, { upsert: true });
+        } else {
+            inMemoryContent[key] = value;
+        }
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Database Error' });
+    }
+});
+
 
 // Get Analytics (Mock data)
 app.get('/api/analytics', (req, res) => {
@@ -204,7 +300,7 @@ app.get('/api/analytics', (req, res) => {
     }
 });
 
-// Capture Lead
+// Capture Lead & Send Email
 app.post('/api/leads', async (req, res) => {
     const { name, email, company, projectType, notes, budget, timeline } = req.body;
     
@@ -216,12 +312,50 @@ app.post('/api/leads', async (req, res) => {
     score = Math.min(score, 100);
 
     try {
-        const newLead = await Lead.create({
-            name, email, company, projectType, notes, budget, timeline, score
-        });
+        let newLead = { _id: Date.now(), name, email, company, projectType, notes, budget, timeline, score };
+        if (mongoose.connection.readyState === 1) {
+            newLead = await Lead.create({
+                name, email, company, projectType, notes, budget, timeline, score
+            });
+        }
+        
+        // Attempt to send email
+        if (process.env.SMTP_EMAIL && process.env.SMTP_PASSWORD) {
+            const transporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: {
+                    user: process.env.SMTP_EMAIL,
+                    pass: process.env.SMTP_PASSWORD
+                }
+            });
+
+            const mailOptions = {
+                from: process.env.SMTP_EMAIL,
+                to: process.env.SMTP_EMAIL, // Send to yourself
+                subject: `New Portfolio Message from ${name}`,
+                html: `
+                    <h2>New Lead/Contact Message</h2>
+                    <p><strong>Name:</strong> ${name}</p>
+                    <p><strong>Email:</strong> ${email}</p>
+                    <p><strong>Message:</strong> ${notes}</p>
+                    <hr/>
+                    <small>Generated via Portfolio Backend</small>
+                `
+            };
+
+            transporter.sendMail(mailOptions, (error, info) => {
+                if (error) {
+                    console.error("Error sending email:", error);
+                } else {
+                    console.log("Email sent: " + info.response);
+                }
+            });
+        }
+
         res.json({ success: true, lead: newLead });
     } catch (err) {
-        res.status(500).json({ success: false, message: 'Database Error' });
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Database/Server Error' });
     }
 });
 
