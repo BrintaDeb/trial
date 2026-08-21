@@ -100,6 +100,7 @@ function App() {
         <CanvasErrorBoundary>
           <Suspense fallback={<Html center><div className="text-white text-xl">LOADING 3D SCENE...</div></Html>}>
             <ScrollControls pages={7} damping={0.25}>
+              <fog attach="fog" args={['#050505', 5, 15]} />
               <Scene />
               {/* HTML Overlay layers that scroll with the 3D scene can go here */}
               <Scroll html style={{ width: '100%', height: '100%' }}>

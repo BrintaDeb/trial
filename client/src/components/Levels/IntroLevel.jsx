@@ -1,7 +1,17 @@
-import React, { useRef } from 'react';
-import { Text, Float, Html } from '@react-three/drei';
+import React from 'react';
+import { Text, Float, Html, useScroll } from '@react-three/drei';
 
 export default function IntroLevel() {
+  const scroll = useScroll();
+
+  const handleEnter = () => {
+    // Scroll down to the first page (Profile)
+    scroll.el.scrollTo({
+      top: window.innerHeight,
+      behavior: 'smooth'
+    });
+  };
+
   return (
     <group>
       <Float speed={2} rotationIntensity={0.2} floatIntensity={0.5}>
@@ -28,7 +38,10 @@ export default function IntroLevel() {
       <Html position={[0, -2.5, 0]} transform distanceFactor={10} zIndexRange={[100, 0]}>
         <div className="flex flex-col items-center gap-4 cursor-interactive">
           <div className="text-accent1 tracking-widest text-sm uppercase">Ready Player?</div>
-          <button className="px-6 py-2 border border-accent2 text-accent2 rounded hover:bg-accent2 hover:text-primary transition-colors">
+          <button 
+            onClick={handleEnter}
+            className="px-6 py-2 border border-accent2 text-accent2 rounded hover:bg-accent2 hover:text-primary transition-colors"
+          >
             ENTER PORTFOLIO
           </button>
         </div>
