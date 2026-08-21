@@ -60,6 +60,14 @@ const Lead = mongoose.model('Lead', LeadSchema);
 const DiscountedEmailSchema = new mongoose.Schema({ email: String });
 const DiscountedEmail = mongoose.model('DiscountedEmail', DiscountedEmailSchema);
 
+// Local Business Lead Schema
+const LocalLeadSchema = new mongoose.Schema({
+    name: String,
+    email: String,
+    searchQuery: String,
+    date: { type: Date, default: Date.now }
+});
+const LocalLead = mongoose.model('LocalLead', LocalLeadSchema);
 
 // --- Multer config for photo uploads ---
 const storage = multer.diskStorage({
@@ -274,6 +282,53 @@ app.post('/api/crm/command', async (req, res) => {
         res.json({ success: false, message: `Command '${command}' not recognized.` });
     } catch (err) {
         res.status(500).json({ success: false, message: 'Database Error during command execution.' });
+    }
+});
+
+// --- Local Business Lead Magnet Endpoints ---
+
+// Mock Places API endpoint
+app.get('/api/places-mock', (req, res) => {
+    const query = req.query.q || '';
+    
+    // Simulate API delay
+    setTimeout(() => {
+        // Return a mock list of businesses based on query
+        res.json({
+            success: true,
+            places: [
+                { name: `Top ${query.split(' ')[0] || 'Business'} Solutions`, rating: 4.8, address: "123 Main St", phone: "+1 (555) 123-4567" },
+                { name: `Elite Local ${query.split(' ')[0] || 'Services'}`, rating: 4.6, address: "456 Market Ave", phone: "+1 (555) 987-6543" },
+                { name: `Pro ${query.split(' ')[0] || 'Group'}`, rating: 4.9, address: "789 Tech Blvd", phone: "+1 (555) 456-7890" },
+                { name: `CityWide ${query.split(' ')[0] || 'Experts'}`, rating: 4.5, address: "101 Center Sq", phone: "+1 (555) 222-3333" },
+                { name: `Reliable ${query.split(' ')[0] || 'Agency'}`, rating: 4.7, address: "202 West End", phone: "+1 (555) 888-9999" }
+            ],
+            totalFound: 24
+        });
+    }, 800);
+});
+
+// Capture the lead and return unlocked data
+app.post('/api/capture-local-lead', async (req, res) => {
+    const { name, email, searchQuery } = req.body;
+    
+    try {
+        let leadId = `mock-${Date.now()}`;
+        if (mongoose.connection.readyState === 1) {
+            const newLead = await LocalLead.create({ name, email, searchQuery });
+            leadId = newLead._id;
+        } else {
+            console.warn("DB not connected, skipping lead creation but returning success for demo.");
+        }
+        
+        res.json({
+            success: true,
+            message: "Lead captured successfully",
+            leadId: leadId
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Database Error' });
     }
 });
 
