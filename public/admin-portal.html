@@ -64,21 +64,6 @@
             </div>
         </div>
 
-        <!-- Trainable AI Automations -->
-        <div class="data-section">
-            <h2 style="color: var(--accent-primary);">Train AI Automations</h2>
-            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Add facts to the AI knowledge base. The AI uses this for automated marketing, SEO, lead capture, and advertising on your website.</p>
-            
-            <form id="ai-train-form" style="display: flex; gap: 1rem; margin-bottom: 2rem;">
-                <input type="text" id="ai-fact-input" style="flex: 1; padding: 1rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.5); color: white;" placeholder="e.g. We specialize in localized SEO and charge minimum ₹15,000/mo." required>
-                <button type="submit" class="btn btn-primary" style="padding: 0 2rem; background: var(--accent-primary); color: #000; font-weight: bold; border-radius: 12px;">Train AI</button>
-            </form>
-            
-            <h3 style="margin-bottom: 1rem; font-size: 1.2rem;">Current Knowledge Base:</h3>
-            <ul id="kb-list" style="color: var(--text-secondary); padding-left: 1.5rem; line-height: 1.6;">
-                <li>Loading...</li>
-            </ul>
-        </div>
 
         <!-- Leads Section -->
         <div class="data-section">
@@ -181,47 +166,12 @@
                         `).join('');
                     }
                 }
-                // Fetch Knowledge Base
-                const resKb = await fetch('/api/knowledge-base');
-                const dataKb = await resKb.json();
-                if (dataKb.success) {
-                    const kbList = document.getElementById('kb-list');
-                    if (dataKb.knowledgeBase.length === 0) {
-                        kbList.innerHTML = '<li>No facts trained yet.</li>';
-                    } else {
-                        kbList.innerHTML = dataKb.knowledgeBase.map(fact => `<li>${fact.original}</li>`).join('');
-                    }
-                }
+
 
             } catch (err) {
                 console.error("Failed to load dashboard data:", err);
             }
         }
-
-        // Train AI Form Handler
-        document.getElementById('ai-train-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const input = document.getElementById('ai-fact-input');
-            const fact = input.value;
-            try {
-                const res = await fetch('/api/train-ai', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ fact })
-                });
-                const data = await res.json();
-                if (data.success) {
-                    input.value = '';
-                    // Reload KB list
-                    const kbList = document.getElementById('kb-list');
-                    kbList.innerHTML = data.knowledgeBase.map(f => `<li>${f.original}</li>`).join('');
-                } else {
-                    alert('Failed to train AI: ' + data.message);
-                }
-            } catch (err) {
-                console.error(err);
-            }
-        });
 
 
         // Logout

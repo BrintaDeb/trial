@@ -41,11 +41,7 @@ const ReviewSchema = new mongoose.Schema({
 });
 const Review = mongoose.model('Review', ReviewSchema);
 
-const KnowledgeBaseFactSchema = new mongoose.Schema({
-    text: String,
-    original: String
-});
-const KnowledgeBaseFact = mongoose.model('KnowledgeBaseFact', KnowledgeBaseFactSchema);
+
 
 const LeadSchema = new mongoose.Schema({
     name: String,
@@ -181,66 +177,6 @@ app.get('/api/reviews', async (req, res) => {
     }
 });
 
-// Train AI
-app.post('/api/train-ai', async (req, res) => {
-    if (req.session.user && (req.session.user.role === 'admin' || req.session.user.role === 'manager')) {
-        const { fact } = req.body;
-        try {
-            if (fact) {
-                await KnowledgeBaseFact.create({ text: fact.toLowerCase(), original: fact });
-            }
-            const knowledgeBase = await KnowledgeBaseFact.find();
-            res.json({ success: true, knowledgeBase });
-        } catch (err) {
-            res.status(500).json({ success: false, message: 'Database Error' });
-        }
-    } else {
-        res.status(403).json({ success: false, message: 'Unauthorized to train AI' });
-    }
-});
-
-// Get Knowledge Base
-app.get('/api/knowledge-base', async (req, res) => {
-    try {
-        const knowledgeBase = await KnowledgeBaseFact.find();
-        res.json({ success: true, knowledgeBase });
-    } catch (err) {
-        res.status(500).json({ success: false, message: 'Database Error' });
-    }
-});
-
-// Chat with AI
-app.post('/api/chat', async (req, res) => {
-    const { message } = req.body;
-    if (!message) return res.json({ response: "I'm Atelier AI. How can I help you today?" });
-
-    try {
-        const knowledgeBase = await KnowledgeBaseFact.find();
-        const userWords = message.toLowerCase().split(' ').filter(w => w.length > 3);
-        
-        let bestMatch = null;
-        let maxScore = 0;
-        
-        knowledgeBase.forEach(fact => {
-            let score = 0;
-            userWords.forEach(w => {
-                if (fact.text.includes(w)) score++;
-            });
-            if (score > maxScore) {
-                maxScore = score;
-                bestMatch = fact;
-            }
-        });
-        
-        if (bestMatch && maxScore > 0) {
-            res.json({ response: bestMatch.original });
-        } else {
-            res.json({ response: "I'm not quite sure how to answer that yet. Ask my human counterpart!" });
-        }
-    } catch (err) {
-        res.status(500).json({ success: false, message: 'Database Error' });
-    }
-});
 
 // Get Analytics (Mock data)
 app.get('/api/analytics', (req, res) => {
