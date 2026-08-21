@@ -1,11 +1,12 @@
 import React, { Suspense, useRef, useState, useEffect } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { ScrollControls, Scroll, useScroll, Environment, Float, Text, Stars, Sparkles } from '@react-three/drei';
+import { ScrollControls, Scroll, useScroll, Environment, Float, Text, Stars, Sparkles, Html } from '@react-three/drei';
 import * as THREE from 'three';
 import gsap from 'gsap';
 import HUD from './components/UI/HUD';
 import CustomCursor from './components/UI/CustomCursor';
 import LoadingScreen from './components/UI/LoadingScreen';
+import CanvasErrorBoundary from './components/UI/CanvasErrorBoundary';
 
 // --- Level Components ---
 import IntroLevel from './components/Levels/IntroLevel';
@@ -96,16 +97,18 @@ function App() {
         gl={{ antialias: true, alpha: false, toneMapping: THREE.ACESFilmicToneMapping }}
       >
         <color attach="background" args={['#050505']} />
-        <Suspense fallback={null}>
-          <ScrollControls pages={7} damping={0.25}>
-            <Scene />
-            {/* HTML Overlay layers that scroll with the 3D scene can go here */}
-            <Scroll html style={{ width: '100%', height: '100%' }}>
-              {/* Invisible spacer div to capture native scroll events */}
-              <div style={{ height: '700vh', width: '100%' }} />
-            </Scroll>
-          </ScrollControls>
-        </Suspense>
+        <CanvasErrorBoundary>
+          <Suspense fallback={<Html center><div className="text-white text-xl">LOADING 3D SCENE...</div></Html>}>
+            <ScrollControls pages={7} damping={0.25}>
+              <Scene />
+              {/* HTML Overlay layers that scroll with the 3D scene can go here */}
+              <Scroll html style={{ width: '100%', height: '100%' }}>
+                {/* Invisible spacer div to capture native scroll events */}
+                <div style={{ height: '700vh', width: '100%' }} />
+              </Scroll>
+            </ScrollControls>
+          </Suspense>
+        </CanvasErrorBoundary>
       </Canvas>
     </div>
   );

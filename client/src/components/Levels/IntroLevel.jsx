@@ -8,7 +8,6 @@ export default function IntroLevel() {
         <Text 
           position={[0, 1, 0]} 
           fontSize={1.5} 
-          font="https://fonts.gstatic.com/s/titanone/v13/m8JVjfWPe1W_e_6bJzH3CJo.woff"
           color="#d4af37"
           anchorX="center"
           anchorY="middle"
@@ -18,7 +17,6 @@ export default function IntroLevel() {
         <Text 
           position={[0, -0.5, 0]} 
           fontSize={1.5} 
-          font="https://fonts.gstatic.com/s/titanone/v13/m8JVjfWPe1W_e_6bJzH3CJo.woff"
           color="#ffffff"
           anchorX="center"
           anchorY="middle"
